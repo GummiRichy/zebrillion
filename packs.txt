@@ -1,0 +1,6 @@
+# ZEBRILLION · dives for the website
+# To add a dive for everyone:
+#   1. Build it in the Claude version (Build a dive), then press COPY PACK CODE
+#   2. Paste the code as ONE new line at the bottom of this file (it starts with ZBPACK:)
+#   3. Commit changes. The site updates in about a minute.
+# Lines starting with # are ignored. Delete a line to remove that dive.

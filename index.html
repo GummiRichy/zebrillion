@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Zebrillion · the lecture dive</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet"><style id="zb-style">
+:root{--navy:#050a14;--ink:#c6d5ec;--dim:rgba(125,147,184,.85);--pink:#ff5c8a;--cyan:#4de3ff;--panel:rgba(11,20,37,.9);--edge:rgba(125,160,210,.32);
+--t-H:#8fa3c4;--t-G:#ff9f43;--t-S:#4de3ff;--t-P:#ff5252;--t-D:#9d7bff;--t-Z:#ffd166;--t-X:#3d4f6e}
+.cb{--t-H:#d7e1f2;--t-G:#ffb35c;--t-S:#7deaff;--t-P:#ff7bac;--t-D:#bfa7ff;--t-Z:#ffe08a;--t-X:#a3b6d6}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--navy);color:var(--ink);font-family:'VT323',ui-monospace,monospace;font-size:20px;overflow:hidden;-webkit-font-smoothing:none}
+button,input,textarea,select{font-family:inherit}
+canvas#bg{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:0}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+#world{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.crt{position:fixed;inset:0;pointer-events:none;z-index:90;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);opacity:.45}
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:89;background:radial-gradient(ellipse at center,transparent 52%,rgba(0,0,0,.6))}
+.reduce .crt{opacity:.2}
+.ch{clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
+.screen{position:fixed;inset:0;z-index:10;display:none}
+.screen.on{display:block}
+.hidden{display:none!important}
+.btn{background:#0e1a2f;color:#e8f0ff;border:3px solid #6fd3f0;letter-spacing:.22em;font-size:22px;padding:10px 18px;cursor:pointer;box-shadow:0 0 0 3px #0a1222 inset,0 0 18px rgba(77,227,255,.18);text-transform:uppercase;transition:background .15s,transform .1s}
+.btn:hover{background:#15274a}.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.big{font-size:clamp(26px,5vw,36px);padding:18px 12px;width:100%;letter-spacing:.28em}
+.btn.pink{background:#e9577f;color:#0b1220;border-color:#ff9fbd;box-shadow:0 0 0 3px #3a0f1e inset,0 0 18px rgba(255,92,138,.3)}
+.btn.pink:hover{background:#ff6a92}
+.btn.ghost{background:rgba(10,18,32,.72);border:2px solid var(--edge);font-size:18px;padding:8px 14px;box-shadow:none;color:#aac0e4}
+.btn.ghost:hover{border-color:#6fd3f0;color:#e8f0ff}
+.btn.sm{font-size:16px;padding:6px 10px;letter-spacing:.14em}
+.iconbtn{position:fixed;z-index:60;width:46px;height:38px;background:rgba(40,52,74,.75);border:2px solid rgba(160,185,220,.25);color:#d6e2f5;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.iconbtn:hover{border-color:#6fd3f0}
+#menuBtn{top:16px;left:12px}#soundBtn{top:16px;right:12px}#setBtn{top:62px;right:12px}
+body.play #menuBtn,body.play #soundBtn{top:84px}
+body.play #setBtn{display:none}
+.mascot{top:0;left:0}
+/* HOME */
+.home-top{position:absolute;top:0;left:0;right:0;height:56%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 12px}
+.logo{font-size:clamp(58px,13vw,148px);line-height:.9;color:#ffe3ec;letter-spacing:.05em;text-shadow:-4px 0 #ff4f7b,4px 0 #2bb8e6,0 6px 0 rgba(20,40,80,.3);margin:0}
+.logo.small{font-size:38px;text-shadow:-2px 0 #ff4f7b,2px 0 #4de3ff}
+.sub{font-size:clamp(22px,4vw,34px);letter-spacing:.55em;color:#7fe3ff;text-shadow:2px 2px 0 rgba(10,30,60,.35),0 0 12px rgba(77,227,255,.35);margin:8px 0 4px;padding-left:.55em}
+.tag{font-size:clamp(17px,2.6vw,24px);letter-spacing:.14em;color:#3f5f86;text-shadow:0 1px 0 rgba(255,255,255,.35)}
+.howto-link{background:none;border:0;color:#4a6d98;font-size:18px;letter-spacing:.2em;text-decoration:underline;cursor:pointer;margin-top:10px}
+.howto{position:absolute;top:8%;left:50%;transform:translateX(-50%);width:min(680px,92%);background:var(--panel);padding:22px 26px;z-index:30;border:2px solid var(--edge)}
+.howto h3{margin:0 0 12px;letter-spacing:.3em;color:#7fe3ff;font-weight:normal;font-size:26px}
+.howto p{margin:6px 0;letter-spacing:.1em;font-size:20px;color:#dbe6f7}
+.howto .tiers{display:grid;grid-template-columns:auto 1fr auto;gap:6px 12px;margin-top:14px;align-items:center}
+.howto .tiers img{width:22px;height:22px;image-rendering:pixelated}
+.home-bottom{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:min(780px,94%);display:flex;flex-direction:column;gap:14px}
+.packcard{background:var(--panel);border:3px solid #6fd3f0;padding:14px 18px;position:relative;display:flex;align-items:center;gap:14px;cursor:pointer}
+.packcard .badge{position:absolute;top:-16px;left:16px;background:#0b1424;border:2px solid #6fd3f0;color:#9feaff;font-size:15px;letter-spacing:.16em;padding:1px 10px}
+.packcard img{width:44px;height:44px;image-rendering:pixelated;filter:drop-shadow(0 0 6px rgba(255,209,102,.5))}
+.packcard .pt{font-size:clamp(22px,4vw,32px);letter-spacing:.14em;color:#f2f6ff;line-height:1}
+.packcard .pc{font-size:17px;color:var(--dim);letter-spacing:.08em}
+.packcard .divers{margin-left:auto;font-size:16px;color:#7fe3ff;white-space:nowrap}
+.packcard .divers::before{content:'■ ';color:#4de3ff}
+.namebox{display:flex;gap:10px;align-items:center;font-size:17px;letter-spacing:.14em;color:var(--dim)}
+.namebox input{flex:1;max-width:260px;background:rgba(8,14,26,.85);border:2px solid var(--edge);color:#e8f0ff;font-size:20px;padding:4px 10px;letter-spacing:.08em}
+.homerow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.homerow .lbl{font-size:18px;letter-spacing:.2em;color:#6d8bb4;margin-right:auto}
+.played{font-size:18px;color:#ffd166;letter-spacing:.12em;text-align:center}
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;z-index:40;pointer-events:none;display:none}
+body.play #hud{display:block}
+.pod{position:absolute;top:10px;background:rgba(14,24,42,.88);padding:6px 16px 4px;min-width:110px}
+.pod .l{font-size:13px;letter-spacing:.3em;color:var(--dim)}
+.pod .v{font-size:28px;line-height:1;letter-spacing:.04em}
+#podD{left:12px}#podD .v{color:#7fe3ff}
+#podS{right:12px;text-align:right}#podS .v{color:var(--pink)}
+.prog{position:absolute;top:14px;left:50%;transform:translateX(-50%);text-align:center}
+.prog .sq{display:inline-block;width:18px;height:18px;margin:0 1px;background:#0d1729;border:2px solid #22324d;vertical-align:middle}
+.prog .sq.cur{background:var(--pink);border-color:#ffd0dd;box-shadow:0 0 8px rgba(255,92,138,.6)}
+.prog .cap{font-size:14px;letter-spacing:.3em;color:var(--dim);margin-top:4px}
+/* PLAY */
+.pcard{position:absolute;top:150px;left:14px;right:72px;max-width:900px;background:var(--panel);padding:20px 24px 16px;box-shadow:inset 0 0 0 2px rgba(125,160,210,.18);transition:opacity .4s,transform .4s}
+.pcard.gone{opacity:0;transform:translateY(-20px)}
+.pcard .n{font-size:16px;letter-spacing:.35em;color:var(--pink)}
+.pcard .q{font-size:clamp(28px,5.2vw,46px);color:#f3f6ff;letter-spacing:.03em;line-height:1.05;margin:8px 0 10px;text-shadow:0 0 12px rgba(200,220,255,.18)}
+.pcard .h{font-size:15px;letter-spacing:.2em;color:var(--dim)}
+.countin{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);background:var(--panel);padding:8px 22px;font-size:20px;letter-spacing:.2em;color:#b9cbe6;white-space:nowrap}
+.countin b{color:#7fe3ff;font-weight:normal}
+.abar{position:absolute;left:12px;right:12px;bottom:14px;display:flex;gap:10px;align-items:stretch;max-width:1000px;margin:0 auto;transition:opacity .3s}
+.abar.gone{opacity:0;pointer-events:none}
+.dial{width:70px;height:70px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:30px;color:#7fe3ff;background:radial-gradient(circle,#0b1526 58%,transparent 59%),conic-gradient(#4de3ff var(--p,100%),#1b2a44 0);box-shadow:0 0 14px rgba(77,227,255,.25)}
+.dial.hot{color:#ff5c8a;background:radial-gradient(circle,#0b1526 58%,transparent 59%),conic-gradient(#ff5c8a var(--p,100%),#1b2a44 0)}
+.inwrap{flex:1;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.ans{width:100%;background:#0b1526;border:2px solid #4fb7d6;color:#f2f6ff;font-size:26px;padding:12px 14px;letter-spacing:.05em;outline:none}
+.ans:focus{border-color:#7fe3ff;box-shadow:0 0 12px rgba(77,227,255,.25)}
+.tbar{height:5px;background:#4de3ff;transition:width .1s linear}
+.tbar.hot{background:var(--pink)}
+.dive{width:110px;font-size:26px;letter-spacing:.2em}
+.msg{position:absolute;left:0;right:0;bottom:104px;text-align:center;font-size:20px;letter-spacing:.06em;color:#ffb36b;text-shadow:0 0 6px rgba(0,0,0,.8);pointer-events:none;min-height:22px}
+.msg small{display:block;font-size:15px;color:var(--dim);letter-spacing:.14em}
+.msg.sugg{color:#ffe08a}
+.msg.sugg .a{color:#9feaff}
+/* world dom */
+.tierline{position:absolute;left:8px;right:98px;height:0;border-top:2px dashed rgba(125,147,184,.36);transition:border-color .2s,box-shadow .2s}
+.tierline .tg{position:absolute;right:0;top:-24px;display:flex;gap:6px;align-items:center;font-size:16px;letter-spacing:.12em;color:rgba(125,147,184,.8);white-space:nowrap}
+.tierline .tg img{width:18px;height:18px;opacity:.55;image-rendering:pixelated}
+.tierline.passed{border-top-color:var(--tc);box-shadow:0 0 16px var(--tc)}
+.tierline.passed .tg{color:var(--tc);text-shadow:0 0 9px var(--tc)}
+.tierline.passed .tg img{opacity:1}
+.sinkcard{position:absolute;left:50%;transform:translate(-50%,-50%);padding:10px 24px;background:rgba(14,24,42,.92);color:#ff6b6b;font-size:clamp(24px,4vw,32px);letter-spacing:.1em;text-shadow:0 0 10px rgba(255,90,90,.75);white-space:nowrap;text-transform:uppercase}
+.sinkcard::after{content:' ▼';font-size:.7em}
+.mascot{position:fixed;z-index:3;width:40px;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,92,138,.55));transition:filter .4s}
+.mascot.gold{filter:drop-shadow(0 0 14px rgba(255,209,102,.85))}
+.bub{position:fixed;z-index:3;width:6px;height:6px;border:1px solid rgba(200,225,255,.6);border-radius:50%;pointer-events:none;animation:bub 2.6s linear forwards}
+@keyframes bub{to{transform:translate(var(--dx),-140px);opacity:0}}
+/* REVEAL */
+.reveal{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:90px 16px 120px}
+.reveal .spr{width:76px;height:76px;image-rendering:pixelated;filter:drop-shadow(0 0 14px var(--tc));animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.reveal .tn{font-size:clamp(40px,8vw,68px);letter-spacing:.2em;color:var(--tc);text-shadow:0 0 18px var(--tc);margin:14px 0 6px;line-height:1;padding-left:.2em;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.reveal .aw{font-size:28px;color:#f2f6ff;letter-spacing:.06em}
+.reveal .pts{font-size:28px;margin:10px 0 6px;color:#f2f6ff;letter-spacing:.05em}
+.reveal .pts b{color:var(--tc);font-weight:normal}
+.reveal .fl{font-size:19px;color:var(--dim);letter-spacing:.12em;max-width:680px}
+.reveal .fact{margin-top:16px;max-width:640px;background:rgba(11,20,37,.75);border-left:3px solid var(--tc);padding:8px 14px;text-align:left;font-size:20px;color:#dbe6f7;letter-spacing:.04em}
+.reveal .fact .src{display:inline-block;font-size:15px;letter-spacing:.16em;color:#0b1220;background:var(--tc);padding:0 6px;margin-right:8px}
+.reveal .crowd{margin-top:10px;font-size:16px;letter-spacing:.16em;color:#7fe3ff}
+.revbtn{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:min(260px,70%)}
+.flat{width:min(420px,80%);height:60px;margin-bottom:8px}
+.flat path{fill:none;stroke:#5d739c;stroke-width:3;stroke-dasharray:900;stroke-dashoffset:900;animation:draw 1.6s linear forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.zp{position:fixed;z-index:35;width:8px;height:8px;pointer-events:none;background:repeating-linear-gradient(90deg,#ffd166 0 2px,#3a2a08 2px 4px);animation:zp 1.6s ease-out forwards}
+@keyframes zp{to{transform:translate(var(--dx),var(--dy)) rotate(260deg);opacity:0}}
+/* RESULTS / PANELS */
+.scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.wrap{width:min(720px,94%);margin:0 auto;padding:76px 0 60px}
+.rhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.rhead .dc{font-size:17px;letter-spacing:.24em;color:#9fb5d6}
+.bigscore{display:flex;align-items:flex-end;gap:14px;margin:22px 0 4px}
+.bigscore .s{font-size:clamp(84px,17vw,128px);line-height:.8;color:#f2f6ff;text-shadow:3px 3px 0 rgba(0,0,0,.4)}
+.bigscore .of{font-size:22px;color:var(--dim)}
+.bigscore .dm{font-size:22px;color:#7fe3ff}
+.bigscore img{margin-left:auto;width:64px;image-rendering:pixelated;filter:drop-shadow(0 0 20px rgba(255,209,102,.6))}
+.ptitle{font-size:16px;letter-spacing:.3em;color:#9fb5d6;margin:34px 0 10px;display:flex;align-items:center;gap:12px}
+.ptitle::after{content:'';flex:1;border-top:2px dashed rgba(125,147,184,.25)}
+.ptitle span{color:#5c7398;letter-spacing:.2em}
+.pct{font-size:20px;letter-spacing:.14em;color:#7fe3ff;margin-top:6px}
+svg text{font-family:'VT323',monospace}
+.bear{width:100%;border-collapse:collapse}
+.bear td{padding:10px 8px;border-bottom:1px solid rgba(125,147,184,.18);font-size:19px;color:#8ea6c9;letter-spacing:.05em}
+.bear td:first-child{width:34px}.bear td:nth-child(2){width:116px;color:#7fe3ff;white-space:nowrap}
+.bear tr.me td{color:#f2f6ff;background:rgba(77,227,255,.06)}
+.bear img{width:20px;image-rendering:pixelated}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.actions .btn{flex:1;min-width:180px}
+.catch .row{border-bottom:1px solid rgba(125,147,184,.18)}
+.catch .top{display:flex;align-items:center;gap:12px;padding:12px 4px;cursor:pointer}
+.catch .top:hover{background:rgba(77,227,255,.04)}
+.catch .num{width:18px;color:#5c7398}
+.catch .top img{width:22px;image-rendering:pixelated}
+.catch .qq{flex:1}
+.catch .qq .q{font-size:15px;letter-spacing:.16em;color:#7189ad;text-transform:uppercase}
+.catch .qq .a{font-size:22px;color:#f2f6ff}
+.catch .pp{font-size:20px;width:46px;text-align:right}
+.catch .plus{width:20px;color:#5c7398}
+.catch .list{display:none;padding:2px 0 14px 34px;max-height:420px;overflow-y:auto}
+.catch .row.open .list{display:block}
+.catch .li{display:flex;gap:10px;align-items:baseline;padding:3px 0;font-size:19px;color:#b7c8e2}
+.catch .li img{width:16px;image-rendering:pixelated;align-self:center}
+.catch .li .nm{flex:1}
+.catch .li .sl{font-size:14px;color:#5c7398;letter-spacing:.1em}
+.catch .li .cr{font-size:14px;color:#4de3ff;letter-spacing:.08em}
+.catch .li .pv{width:44px;text-align:right}
+.catch .li.mine{color:#fff;background:rgba(255,92,138,.1)}
+.catch .li .ff{display:block;font-size:16px;color:#7f97bb;letter-spacing:.03em}
+.pod-list .pr{display:flex;gap:12px;padding:8px 4px;border-bottom:1px solid rgba(125,147,184,.15);font-size:21px}
+.pod-list .pr .rk{width:28px;color:#5c7398}.pod-list .pr .nm{flex:1;color:#dbe6f7}.pod-list .pr .sc{color:var(--pink)}.pod-list .pr .dp{color:#7fe3ff;width:90px;text-align:right}
+.pod-list .pr.me{background:rgba(255,92,138,.08)}
+.note{font-size:17px;color:#7189ad;letter-spacing:.06em;line-height:1.3}
+.panel{background:var(--panel);border:2px solid var(--edge);padding:16px 18px;margin-top:14px}
+.lib .item{display:flex;gap:14px;align-items:center;padding:14px;border:2px solid var(--edge);background:rgba(11,20,37,.85);margin-bottom:10px}
+.lib .item .t{font-size:26px;color:#f2f6ff;letter-spacing:.06em;line-height:1}
+.lib .item .c{font-size:16px;color:var(--dim);letter-spacing:.1em}
+.lib .item .mid{flex:1;min-width:0}
+.lib .item .sc{font-size:18px;color:#ffd166;letter-spacing:.1em}
+.lib .item .btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.lib .local{font-size:13px;color:#ff9f43;letter-spacing:.14em;border:1px solid #ff9f43;padding:0 5px;margin-left:6px;vertical-align:middle}
+h2.h{font-size:34px;letter-spacing:.3em;color:#7fe3ff;font-weight:normal;margin:0 0 6px;text-shadow:0 0 12px rgba(77,227,255,.3)}
+.lab label{display:block;font-size:15px;letter-spacing:.24em;color:#8ea6c9;margin:14px 0 6px}
+.lab input[type=text],.lab textarea{width:100%;background:#0a1323;border:2px solid var(--edge);color:#e8f0ff;font-size:20px;padding:8px 10px;letter-spacing:.03em;outline:none}
+.lab textarea{min-height:110px;resize:vertical;line-height:1.15}
+.lab input:focus,.lab textarea:focus{border-color:#6fd3f0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.two{grid-template-columns:1fr}}
+.drop{border:3px dashed #3f6d96;padding:26px 14px;text-align:center;cursor:pointer;background:rgba(10,20,36,.6);color:#9fb5d6;letter-spacing:.12em;font-size:20px}
+.drop.over{border-color:#4de3ff;background:rgba(77,227,255,.08);color:#fff}
+.drop b{color:#7fe3ff;font-weight:normal}
+.srcs .s{display:flex;gap:10px;align-items:center;font-size:18px;padding:6px 2px;border-bottom:1px solid rgba(125,147,184,.15)}
+.srcs .s .w{margin-left:auto;color:#7189ad;font-size:15px;letter-spacing:.1em}
+.srcs .s button{background:none;border:0;color:#ff7b9b;cursor:pointer;font-size:20px}
+.log{background:#040912;border:2px solid #17304d;padding:10px 12px;font-size:17px;color:#6fe39a;min-height:60px;max-height:200px;overflow-y:auto;white-space:pre-wrap;margin-top:12px}
+.log .e{color:#ff7b9b}
+.rv{border:2px solid var(--edge);background:rgba(11,20,37,.85);margin-bottom:10px}
+.rv .hd{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:10px 12px}
+.rv .hd .i{color:#5c7398;width:20px}
+.rv .hd input{flex:1 1 calc(100% - 40px);background:transparent;border:0;border-bottom:1px dashed var(--edge);color:#f2f6ff;font-size:22px;outline:none;min-width:0}
+.rv .hist{display:flex;gap:2px;height:14px;flex:1;margin-left:30px;min-width:80px}
+.rv .hist i{display:block;height:100%}
+.rv .tools{display:flex;gap:6px}
+.rv .body{display:none;padding:4px 12px 12px 42px}
+.rv.open .body{display:block}
+.chip{display:inline-flex;align-items:center;gap:5px;margin:3px 4px 3px 0;padding:1px 8px;border:1px solid var(--tc);color:#e6eefb;font-size:17px;background:rgba(0,0,0,.25)}
+.chip img{width:14px;image-rendering:pixelated}
+.chip button{background:none;border:0;color:#ff7b9b;cursor:pointer;padding:0 0 0 4px;font-size:17px}
+.addrow{display:flex;gap:6px;margin-top:8px}
+.addrow input{flex:1;background:#0a1323;border:1px solid var(--edge);color:#fff;font-size:18px;padding:3px 8px}
+.addrow select{background:#0a1323;border:1px solid var(--edge);color:#fff;font-size:17px}
+/* menu */
+#menu{position:fixed;inset:0;z-index:80;display:none}
+#menu.on{display:block}
+#menu .shade{position:absolute;inset:0;background:rgba(2,5,10,.6)}
+#menu .dr{position:absolute;top:0;left:0;bottom:0;width:min(320px,86%);background:#08111f;border-right:2px solid var(--edge);padding:20px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+#menu .dr a{display:block;padding:10px 6px;color:#cfe0f7;font-size:24px;letter-spacing:.14em;text-decoration:none;cursor:pointer;border-bottom:1px solid rgba(125,147,184,.12)}
+#menu .dr a:hover{color:#7fe3ff}
+#menu .x{align-self:flex-end;background:none;border:0;color:#9fb5d6;font-size:28px;cursor:pointer}
+.toggle{display:flex;justify-content:space-between;align-items:center;padding:8px 6px;font-size:20px;letter-spacing:.1em;color:#cfe0f7}
+.toggle input{width:20px;height:20px;accent-color:#4de3ff}
+.modal{position:fixed;inset:0;z-index:85;display:flex;align-items:center;justify-content:center;background:rgba(2,5,10,.7)}
+.modal .box{width:min(560px,92%);background:#0a1426;border:3px solid #6fd3f0;padding:20px}
+.modal textarea{width:100%;height:140px;background:#050b16;color:#e8f0ff;border:2px solid var(--edge);font-size:17px;padding:8px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:95;background:#0d1a30;border:2px solid #6fd3f0;padding:8px 18px;font-size:19px;letter-spacing:.12em;color:#e8f0ff;display:none}
+.spin{display:inline-block;animation:spin 1s steps(8) infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.reduce *{animation-duration:.01s!important}
+.inwrap{min-width:0}.dive{flex:none}
+#s-lab .scroll,#s-library .scroll{background:rgba(4,8,16,.62)}
+#s-results .scroll{background:rgba(4,8,16,.35)}
+.howto{max-height:84vh;overflow-y:auto}
+@media(max-width:600px){
+ body{font-size:18px}
+ .sub{letter-spacing:.3em;padding-left:.3em}
+ .tag{font-size:15px;letter-spacing:.08em}
+ .howto{padding:16px}.howto p{font-size:17px;letter-spacing:.05em}
+ .home-bottom{gap:10px;bottom:12px}
+ .packcard{padding:12px}.packcard .pt{font-size:22px;letter-spacing:.06em}.packcard .divers{display:none}.packcard img{width:34px;height:34px}
+ .namebox{font-size:14px;letter-spacing:.08em}
+ .btn.big{letter-spacing:.14em;font-size:26px;padding:14px 8px}
+ .homerow .lbl{display:none}.homerow .btn{flex:1;font-size:15px;letter-spacing:.1em;padding:8px 6px}
+ .pcard{top:136px;right:14px;padding:14px 16px 12px}
+ .pod{min-width:92px;padding:5px 10px 3px}.pod .v{font-size:22px}
+ .prog .sq{width:13px;height:13px}
+ .dial{width:58px;height:58px;font-size:24px}.ans{font-size:22px;padding:10px}.dive{width:80px;font-size:20px;letter-spacing:.1em}
+ .msg{bottom:88px;font-size:17px}.countin{font-size:16px;bottom:84px}
+ .reveal .fact{font-size:17px}.reveal .fl{font-size:16px}
+ .bear td{font-size:16px}.bear td:nth-child(2){width:84px}
+ .actions .btn{min-width:140px;font-size:17px;letter-spacing:.12em}
+ h2.h{font-size:26px;letter-spacing:.18em}
+ .lib .item{flex-wrap:wrap}.lib .item .btns{width:100%;justify-content:flex-start}
+ 
+ .tierline .tg{font-size:13px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="application/json" id="zb-data">{"packs":[]}</script>
+<script id="zb-app">
+(()=>{
+"use strict";
+/* =========================================================
+   ZEBRILLION — a lecture-powered rarity dive.
+   Mechanic homage to Krillion: 7 prompts, 25s, rarer answers sink deeper.
+   ========================================================= */
+const ART_URL = "https://claude.ai/artifact/25eJmCDoiHFDtkHS9GLbup";
+const ON_CLAUDE = !!(window.claude && window.claude.use);
+const HEAD = '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Zebrillion · the lecture dive</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">';
+let DATA; try{ DATA = JSON.parse(document.getElementById('zb-data').textContent||'{}'); }catch(e){ DATA = {}; }
+if(!Array.isArray(DATA.packs)) DATA.packs = [];
+const $ = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem('zb.'+k); return v==null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k,v){ try{ localStorage.setItem('zb.'+k,JSON.stringify(v)); }catch(e){} }
+};
+const SET = Object.assign({sound:true,cb:false,reduce:false}, LS.get('set',{}));
+
+/* ---------------- tiers ---------------- */
+const TIERS = {
+  H:{name:'HORSE',pts:10,emoji:'🐴',fl:'Hoofbeats. The whole lecture hall said it.'},
+  G:{name:'GUNNER',pts:15,emoji:'✋',fl:'Felt clever. The gunner in row one said it too.'},
+  S:{name:'SCHOOLER',pts:30,emoji:'🐟',fl:'Solid — swims with the class.'},
+  P:{name:'PEARL',pts:60,emoji:'🦪',fl:'A clinical pearl. Nice pull.'},
+  D:{name:'DEEP CUT',pts:85,emoji:'🐙',fl:'Attending-level. The resident is writing this down.'},
+  Z:{name:'ONE IN A ZEBRILLION',pts:100,emoji:'🦓',fl:'Nobody else went down here.'},
+  X:{name:'FLATLINE',pts:0,emoji:'▪️',fl:'the clock beat you to it.'}
+};
+const ORDER=['H','G','S','P','D','Z'];
+const tcol = t=>getComputedStyle(document.body).getPropertyValue('--t-'+t).trim()||'#fff';
+
+/* ---------------- pixel sprites (original art) ---------------- */
+const SPR = {
+  sea:[ // zebra seahorse, facing left
+    "....kwk.....",
+    "...kwkwk....",
+    "..wwwwwwk...",
+    "wwwwwewwk...",
+    "wkk..wwwk...",
+    ".....wkwwk..",
+    ".....wwkwkp.",
+    ".....wkwwkpp",
+    "....wwwkwkp.",
+    ".....kwwwk..",
+    ".....wkwwk..",
+    ".....wwkw...",
+    "......wkw...",
+    ".....wkw....",
+    "....wkw..ww.",
+    "....wkw.wkw.",
+    ".....wwkww..",
+    ".......ww..."],
+  horse:[
+    "....aa....",
+    "...aaab...",
+    "..aaaabb..",
+    ".aeaaabb..",
+    "aaaaaaabb.",
+    "aaa.aaabb.",
+    "....aaabb.",
+    "...aaaabb.",
+    "..aaaaaab.",
+    "..aaaaaaa."],
+  hand:[
+    "...o.o....",
+    ".o.o.o.o..",
+    ".o.o.o.o..",
+    ".o.o.o.o..",
+    ".ooooooo.o",
+    ".ooooooooo",
+    ".oooooooo.",
+    ".ooooooo..",
+    "..oooooo..",
+    "..oooooo..",
+    "...oooo...",
+    "...oooo..."],
+  fish:[
+    "....cccc...c",
+    "..cccccccccc",
+    ".ckcccccccc.",
+    "cccccccccc..",
+    ".cccccccccc.",
+    "..cccccccccc",
+    "....cccc...c"],
+  pearl:[
+    "..rrrrrrrr..",
+    ".rrdrrdrrdr.",
+    "rrrrrrrrrrrr",
+    ".....ww.....",
+    "....wwww....",
+    "rr..wwwq..rr",
+    "rrrrrwqrrrrr",
+    ".rrrrrrrrrr.",
+    "..rdrrdrrd.."],
+  angler:[
+    ".......y....",
+    "......v.....",
+    ".....v......",
+    "..vvvvvv....",
+    ".vvvvvvvvv..",
+    "vkvvvvvvvvvv",
+    "vvvvvvvvvv.v",
+    "wvwvvvvvvvv.",
+    ".vvvvvvvv.vv",
+    "..vvvvvv...."]
+};
+function palFor(t){
+  const c=tcol(t);
+  switch(t){
+    case 'H': return {sp:'horse',p:{a:c,b:'#56677f',e:'#0b0f17'}};
+    case 'G': return {sp:'hand',p:{o:c}};
+    case 'S': return {sp:'fish',p:{c:c,k:'#06222b'}};
+    case 'P': return {sp:'pearl',p:{r:c,d:'#7a1f2a',w:'#fbf4ff',q:'#cdbfe0'}};
+    case 'D': return {sp:'angler',p:{v:c,k:'#ffffff',w:'#ffffff',y:'#ffe37a'}};
+    case 'Z': return {sp:'sea',p:{w:c,k:'#8a5a10',e:'#1a1205',p:'#fff1b8'}};
+  }
+  return null;
+}
+const sprCache = {};
+function spriteURL(name,pal,px=4){
+  const key=name+JSON.stringify(pal)+px; if(sprCache[key]) return sprCache[key];
+  const rows=SPR[name], h=rows.length, w=Math.max(...rows.map(r=>r.length));
+  const c=document.createElement('canvas'); c.width=w*px; c.height=h*px; const x=c.getContext('2d');
+  rows.forEach((r,j)=>[...r].forEach((ch,i)=>{ if(pal[ch]){ x.fillStyle=pal[ch]; x.fillRect(i*px,j*px,px,px);} }));
+  return sprCache[key]=c.toDataURL();
+}
+function tierSprite(t){ const p=palFor(t); return p?spriteURL(p.sp,p.p):''; }
+const MASCOT = ()=>spriteURL('sea',{w:'#f6f1ea',k:'#1d222b',e:'#0b0f17',p:'#ff5c8a'});
+const MASCOT_GOLD = ()=>tierSprite('Z');
+
+/* ---------------- demo pack ---------------- */
+const A=(n,t,f,a=[],s='')=>({n,t,f,a,s});
+const DEMO = {id:'demo',demo:true,title:'Metabolism Mayhem',course:'Demo dive · biochem & inborn errors',by:'Zebrillion',prompts:[
+ {q:'Name a lysosomal storage disease',ans:[
+  A('Tay-Sachs disease','H','Hexosaminidase A deficiency → cherry-red macula with NO hepatosplenomegaly.',['tay sachs']),
+  A('Gaucher disease','H','Most common LSD: glucocerebrosidase deficiency, "crumpled tissue paper" macrophages.',['gaucher','gauchers']),
+  A('Niemann-Pick disease','H','Sphingomyelinase deficiency → cherry-red macula WITH hepatosplenomegaly.',['niemann pick','niemann-pick type a','niemann-pick type b','niemann-pick type c','npc']),
+  A('Pompe disease','G','A glycogen storage disease that is ALSO lysosomal (acid α-glucosidase). Big heart.',['pompe','acid maltase deficiency','gsd ii','gsd 2']),
+  A('Fabry disease','S','X-linked α-galactosidase A deficiency → angiokeratomas, burning pain, renal failure.',['fabry','anderson-fabry disease','fabrys']),
+  A('Krabbe disease','S','Galactocerebrosidase deficiency → globoid cells, optic atrophy, neuropathy.',['krabbe','globoid cell leukodystrophy']),
+  A('Hurler syndrome','S','MPS I (α-L-iduronidase) → corneal clouding, coarse facies, airway obstruction.',['hurler','mps i','mps 1','mucopolysaccharidosis type i','mucopolysaccharidosis type 1']),
+  A('Hunter syndrome','S','X-linked MPS II (iduronate-2-sulfatase). Hunters aim — so no corneal clouding.',['hunter','mps ii','mps 2','mucopolysaccharidosis type ii']),
+  A('Metachromatic leukodystrophy','P','Arylsulfatase A deficiency → sulfatide buildup, central + peripheral demyelination.',['mld']),
+  A('I-cell disease','P','No mannose-6-phosphate tag, so lysosomal enzymes get secreted instead of delivered.',['i cell disease','inclusion cell disease','mucolipidosis ii','mucolipidosis type 2','ml ii']),
+  A('Sanfilippo syndrome','P','MPS III: heparan sulfate buildup → severe neurodegeneration, milder body features.',['sanfilippo','mps iii','mps 3']),
+  A('Morquio syndrome','P','MPS IV: keratan sulfate buildup → skeletal dysplasia with normal intelligence.',['morquio','mps iv','mps 4']),
+  A('Sandhoff disease','P','Hexosaminidase A AND B deficiency — Tay-Sachs plus organomegaly.',['sandhoff']),
+  A('Batten disease','P','Neuronal ceroid lipofuscinosis: vision loss, seizures, childhood regression.',['neuronal ceroid lipofuscinosis','ncl']),
+  A('Cystinosis','P','Lysosomal cystine transporter (cystinosin) defect → infantile Fanconi syndrome.',['nephropathic cystinosis']),
+  A('GM1 gangliosidosis','P','β-galactosidase deficiency; can also show a cherry-red spot.',['gm1']),
+  A('Scheie syndrome','P','The mild end of MPS I: corneal clouding, normal intelligence.',['scheie','mps is']),
+  A('Maroteaux-Lamy syndrome','D','MPS VI: arylsulfatase B deficiency, skeletal disease with preserved intellect.',['maroteaux lamy','mps vi','mps 6']),
+  A('Sly syndrome','D','MPS VII: β-glucuronidase deficiency; can present as hydrops fetalis.',['sly','mps vii','mps 7']),
+  A('Wolman disease','D','Lysosomal acid lipase deficiency → infant with calcified adrenals.',['wolman','lysosomal acid lipase deficiency','lal deficiency','cholesteryl ester storage disease']),
+  A('Farber disease','D','Acid ceramidase deficiency → swollen painful joints, nodules, hoarse cry.',['farber','farber lipogranulomatosis']),
+  A('Alpha-mannosidosis','D','Coarse features, hearing loss and immune deficiency.',['alpha mannosidosis','mannosidosis']),
+  A('Fucosidosis','D','α-L-fucosidase deficiency; angiokeratomas like Fabry.',[]),
+  A('Aspartylglucosaminuria','D','Part of the "Finnish disease heritage".',['agu']),
+  A('Schindler disease','D','α-N-acetylgalactosaminidase deficiency.',['schindler','kanzaki disease']),
+  A('Galactosialidosis','D','Cathepsin A defect → combined β-galactosidase + neuraminidase loss.',[]),
+  A('Sialidosis','D','Neuraminidase deficiency → cherry-red spot–myoclonus syndrome.',['mucolipidosis i','ml i']),
+  A('Mucolipidosis type IV','D','TRPML1 (MCOLN1) defect: corneal clouding, psychomotor delay.',['mucolipidosis iv','mucolipidosis 4','ml iv']),
+  A('Multiple sulfatase deficiency','D','SUMF1 defect knocks out every sulfatase at once.',['austin disease']),
+  A('Danon disease','D','LAMP2 defect → cardiomyopathy, myopathy, intellectual disability.',['danon']),
+  A('Salla disease','D','Sialin transporter defect, named for a town in Finnish Lapland.',['free sialic acid storage disease']),
+  A('Hurler-Scheie syndrome','D','The intermediate MPS I phenotype.',['hurler scheie']),
+  A('Pycnodysostosis','Z','Cathepsin K deficiency → dense, brittle bones. Toulouse-Lautrec may have had it.',['pyknodysostosis','cathepsin k deficiency'])
+ ]},
+ {q:'Name an enzyme of glycolysis',ans:[
+  A('Hexokinase','H','Step 1 in most tissues; inhibited by its own product, glucose-6-phosphate.',['hk']),
+  A('Phosphofructokinase-1','H','The rate-limiting step. Fructose-2,6-bisphosphate is its big activator.',['pfk','pfk1','pfk-1','phosphofructokinase','phosphofructokinase 1']),
+  A('Pyruvate kinase','H','Last step. Deficiency → hemolysis, since RBCs have no mitochondria to fall back on.',['pk']),
+  A('Glucokinase','G','Liver/β-cell hexokinase IV: high Km, not product-inhibited. The MODY2 gene.',['hexokinase iv','hexokinase 4','gck']),
+  A('Lactate dehydrogenase','G','The anaerobic tail: regenerates NAD+ so glycolysis can keep going.',['ldh']),
+  A('Aldolase','S','Splits fructose-1,6-bisphosphate into two trioses.',['aldolase a','fructose bisphosphate aldolase']),
+  A('Glyceraldehyde-3-phosphate dehydrogenase','S','The NADH-making step; arsenate uncouples it.',['gapdh','g3pdh','g3p dehydrogenase']),
+  A('Phosphoglycerate kinase','S','First ATP-generating step (substrate-level phosphorylation).',['pgk','pgk1']),
+  A('Enolase','S','Fluoride inhibits it — why gray-top tubes stop glucose loss in blood samples.',['phosphopyruvate hydratase']),
+  A('Phosphoglucose isomerase','P','G6P → F6P. Deficiency is a rare cause of hemolytic anemia.',['glucose-6-phosphate isomerase','gpi','pgi','phosphohexose isomerase']),
+  A('Phosphoglycerate mutase','P','Shifts the phosphate from C3 to C2.',['pgam','phosphoglyceromutase']),
+  A('Bisphosphoglycerate mutase','D','RBC side-shunt that makes 2,3-BPG and shifts the O₂ curve right.',['bpgm','2,3-bpg mutase','diphosphoglycerate mutase']),
+  A('Triose phosphate isomerase','Z','A "perfect enzyme": it works about as fast as substrate can diffuse into it.',['tpi','tim','triosephosphate isomerase'])
+ ]},
+ {q:'Name an essential amino acid',ans:[
+  A('Leucine','H','Purely ketogenic (with lysine) and a key mTOR activator.',['leu']),
+  A('Lysine','H','Purely ketogenic; hydroxylated lysine makes collagen cross-links.',['lys']),
+  A('Phenylalanine','H','Becomes tyrosine via phenylalanine hydroxylase — broken in PKU.',['phe']),
+  A('Arginine','G','Only conditionally essential (growing kids, stress). We will allow it.',['arg']),
+  A('Tryptophan','S','Precursor of serotonin, melatonin and niacin.',['trp']),
+  A('Methionine','S','The start-codon amino acid and the source of SAM, the methyl donor.',['met']),
+  A('Valine','S','A branched-chain amino acid that MSUD cannot break down.',['val']),
+  A('Isoleucine','S','Branched-chain; both glucogenic and ketogenic.',['ile']),
+  A('Histidine','P','Precursor of histamine; essential in infants and in adults.',['his']),
+  A('Threonine','Z','The last of the 20 standard amino acids to be discovered — William Rose, 1935.',['thr'])
+ ]},
+ {q:'Name a glycogen storage disease',ans:[
+  A('Von Gierke disease','H','Glucose-6-phosphatase deficiency → severe fasting hypoglycemia, lactic acidosis, big liver.',['von gierke','gsd i','gsd 1','gsd ia','glucose-6-phosphatase deficiency','type 1 gsd']),
+  A('Pompe disease','H','"Pompe trashes the pump": cardiomegaly from acid α-glucosidase deficiency.',['pompe','gsd ii','gsd 2','acid maltase deficiency']),
+  A('McArdle disease','H','Myophosphorylase deficiency → cramps, myoglobinuria, "second wind".',['mcardle','gsd v','gsd 5','myophosphorylase deficiency']),
+  A('Cori disease','S','Debranching enzyme deficiency — Von Gierke-lite with normal lactate.',['cori','forbes disease','forbes-cori disease','gsd iii','gsd 3','debranching enzyme deficiency']),
+  A('Andersen disease','P','Branching enzyme deficiency → abnormal glycogen and early cirrhosis.',['andersen','gsd iv','gsd 4','branching enzyme deficiency','amylopectinosis']),
+  A('Hers disease','P','Liver glycogen phosphorylase deficiency — a mild hepatic GSD.',['hers','gsd vi','gsd 6','liver phosphorylase deficiency']),
+  A('Glycogen synthase deficiency','D','GSD 0: too LITTLE glycogen — fasting hypoglycemia with ketosis.',['gsd 0','gsd0','gsd type 0']),
+  A('Phosphorylase kinase deficiency','D','GSD IX: often X-linked; hepatomegaly that improves with age.',['gsd ix','gsd 9']),
+  A('Fanconi-Bickel syndrome','D','GLUT2 defect → liver/kidney glycogen buildup plus Fanconi syndrome.',['fanconi bickel','gsd xi','gsd 11','glut2 deficiency']),
+  A('Danon disease','D','LAMP2 defect, once labeled GSD IIb.',['danon','gsd iib']),
+  A('Lafora disease','D','Polyglucosan (Lafora) bodies → progressive myoclonic epilepsy.',['lafora']),
+  A('Glycogenin deficiency','D','Glycogenin primes glycogen synthesis; loss → cardiomyopathy and myopathy.',['gsd xv','gsd 15']),
+  A('Aldolase A deficiency','D','Myopathy plus hemolytic anemia.',['gsd xii','gsd 12']),
+  A('Beta-enolase deficiency','D','Muscle-specific enolase; exercise intolerance.',['gsd xiii','gsd 13']),
+  A('Phosphoglycerate mutase deficiency','D','Exercise cramps and myoglobinuria; tubular aggregates on biopsy.',['gsd x','gsd 10','pgam deficiency']),
+  A('Tarui disease','Z','Muscle PFK deficiency: exercise intolerance PLUS hemolysis, since RBCs need PFK too.',['tarui','gsd vii','gsd 7','phosphofructokinase deficiency','pfk deficiency'])
+ ]},
+ {q:'Name an inborn error of amino acid metabolism',ans:[
+  A('Phenylketonuria','H','Phenylalanine hydroxylase deficiency → musty odor, fair skin, ID if untreated.',['pku']),
+  A('Maple syrup urine disease','H','Branched-chain α-ketoacid dehydrogenase deficiency; thiamine is its cofactor.',['msud','maple syrup disease']),
+  A('Homocystinuria','H','Lens dislocates DOWN-and-in (Marfan: up-and-out), plus clots.',['classic homocystinuria','cystathionine beta synthase deficiency','cbs deficiency']),
+  A('Alkaptonuria','G','Homogentisate oxidase deficiency: urine darkens on standing, early arthritis.',['ochronosis','homogentisic aciduria','black urine disease']),
+  A('Cystinuria','G','Strictly a transport defect (COLA), but a classic pick. Hexagonal stones.',[]),
+  A('Hartnup disease','G','Neutral amino acid transporter defect → pellagra-like rash.',['hartnup','hartnup disorder']),
+  A('Ornithine transcarbamylase deficiency','S','Most common urea cycle disorder (X-linked): ↑NH₃ with orotic aciduria.',['otc deficiency','otc']),
+  A('Tyrosinemia type I','S','FAH deficiency → liver failure and renal Fanconi; cabbage-like odor.',['tyrosinemia','tyrosinemia type 1','hepatorenal tyrosinemia']),
+  A('Albinism','S','OCA1 = tyrosinase deficiency: no melanin made from tyrosine.',['oculocutaneous albinism','oca1','tyrosinase deficiency']),
+  A('Methylmalonic acidemia','P','Methylmalonyl-CoA mutase (B12-dependent) defect → acidosis, ↑NH₃.',['mma','methylmalonic aciduria']),
+  A('Propionic acidemia','P','Propionyl-CoA carboxylase (biotin-dependent) defect → ketoacidosis in infancy.',['propionic aciduria','propionyl-coa carboxylase deficiency']),
+  A('Isovaleric acidemia','P','Leucine pathway block with the famous "sweaty feet" odor.',['iva','isovaleric aciduria']),
+  A('Citrullinemia','P','Argininosuccinate synthetase deficiency → hyperammonemia, sky-high citrulline.',['argininosuccinate synthetase deficiency','citrullinemia type 1']),
+  A('Argininosuccinic aciduria','P','Classic sign: brittle, knotted hair (trichorrhexis nodosa).',['argininosuccinate lyase deficiency','asl deficiency']),
+  A('Carbamoyl phosphate synthetase I deficiency','P','Block upstream of OTC — so NO orotic aciduria.',['cps1 deficiency','cps deficiency','cps i deficiency']),
+  A('Nonketotic hyperglycinemia','P','Glycine cleavage defect → neonatal hiccups, apnea, seizures.',['nkh','glycine encephalopathy']),
+  A('Arginase deficiency','P','Odd one out: progressive spastic diplegia more than ammonia crises.',['hyperargininemia','argininemia']),
+  A('N-acetylglutamate synthase deficiency','D','No NAG, no CPS I activation; treated with carglumic acid.',['nags deficiency']),
+  A('Sulfite oxidase deficiency','D','Seizures and lens dislocation.',[]),
+  A('Molybdenum cofactor deficiency','D','Takes out sulfite oxidase, xanthine oxidase and aldehyde oxidase at once.',[]),
+  A('Glutaric acidemia type I','D','Macrocephaly and subdural bleeds that can mimic abuse.',['glutaric aciduria type 1','ga1','glutaric acidemia','glutaric aciduria']),
+  A('Hyperprolinemia','D','Proline oxidase or P5C dehydrogenase defects; often benign.',[]),
+  A('Hypermethioninemia','D','Usually MAT I/III defects; often benign.',[]),
+  A('3-Methylcrotonyl-CoA carboxylase deficiency','D','Leucine catabolism; many cases found only on newborn screening.',['3-mcc deficiency','3mcc deficiency']),
+  A('HHH syndrome','D','Hyperornithinemia-hyperammonemia-homocitrullinuria: mitochondrial ornithine carrier defect.',['hyperornithinemia-hyperammonemia-homocitrullinuria syndrome']),
+  A('Lysinuric protein intolerance','D','Dibasic amino acid transport defect; most common in Finland.',['lpi']),
+  A('Tyrosinemia type II','D','Richner-Hanhart: painful palm/sole keratoses plus corneal ulcers.',['tyrosinemia type 2','richner-hanhart syndrome','tyrosine aminotransferase deficiency']),
+  A('Prolidase deficiency','D','Chronic leg ulcers and imidodipeptiduria.',[]),
+  A('Histidinemia','D','Histidase deficiency; mostly benign.',[]),
+  A('Gyrate atrophy','D','Ornithine aminotransferase deficiency → scalloped chorioretinal atrophy.',['ornithine aminotransferase deficiency']),
+  A('Hawkinsinuria','Z','Named after the first family described — and so is the urine metabolite, "hawkinsin".',[])
+ ]},
+ {q:'Name a hormone that raises blood glucose',ans:[
+  A('Glucagon','H','The main fasting hormone: glycogenolysis + gluconeogenesis in the liver.',[]),
+  A('Cortisol','H','Drives gluconeogenesis and insulin resistance — why steroids cause hyperglycemia.',['hydrocortisone','glucocorticoid','glucocorticoids']),
+  A('Epinephrine','H','Fight-or-flight glycogenolysis via β₂ → cAMP.',['adrenaline','adrenalin']),
+  A('Growth hormone','S','Anti-insulin effects — acromegaly often comes with diabetes.',['gh','somatotropin','hgh','human growth hormone']),
+  A('Norepinephrine','S','Raises glucose too, mostly via lipolysis and glucagon release.',['noradrenaline']),
+  A('Thyroid hormone','P','Speeds gut glucose absorption and hepatic glucose output.',['thyroxine','t4','t3','triiodothyronine','thyroid hormones']),
+  A('ACTH','P','Indirectly — by driving cortisol release.',['adrenocorticotropic hormone','corticotropin']),
+  A('Cortisone','D','Converted to cortisol by 11β-HSD1.',[]),
+  A('Corticotropin-releasing hormone','D','Raises glucose indirectly, via the HPA axis.',['crh','crf']),
+  A('Human placental lactogen','Z','A big reason pregnancy is diabetogenic: it blunts maternal insulin sensitivity.',['hpl','placental lactogen','chorionic somatomammotropin','human chorionic somatomammotropin'])
+ ]},
+ {q:'Name a cofactor of pyruvate dehydrogenase',ans:[
+  A('Thiamine','H','As TPP. Deficiency → Wernicke, beriberi. Give thiamine BEFORE glucose.',['vitamin b1','b1','thiamine pyrophosphate','tpp','thiamin']),
+  A('NAD+','S','The final electron acceptor (via E3) — built from niacin.',['nad','niacin','vitamin b3','b3','nicotinamide adenine dinucleotide']),
+  A('FAD','S','Bound to E3, dihydrolipoamide dehydrogenase; made from riboflavin.',['riboflavin','vitamin b2','b2','flavin adenine dinucleotide']),
+  A('Coenzyme A','S','Accepts the acetyl group → acetyl-CoA. Built from pantothenate (B5).',['coa','pantothenic acid','vitamin b5','b5','pantothenate']),
+  A('Magnesium','D','Needed with TPP at E1.',['mg','mg2+','magnesium ion']),
+  A('Lipoic acid','Z','Arsenite binds lipoic acid\'s thiols — one way arsenic shuts down PDH.',['lipoate','alpha-lipoic acid','lipoamide','alpha lipoic acid'])
+ ]}
+]};
+
+/* ---------------- answer matching ---------------- */
+const FILL=new Set(['disease','syndrome','disorder','deficiency','type','the','of','a','an','and','s','s\'']);
+function norm(s){
+  return String(s).toLowerCase().replace(/α/g,'alpha').replace(/β/g,'beta').replace(/γ/g,'gamma').replace(/δ/g,'delta').replace(/κ/g,'kappa')
+    .normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/['’]s\b/g,'').replace(/&/g,' and ').replace(/[^a-z0-9+]+/g,' ').trim();
+}
+function keyOf(s){ const n=norm(s); const k=n.split(' ').filter(w=>w&&!FILL.has(w)).join(''); return k||n.replace(/ /g,''); }
+function lev(a,b,max){
+  if(Math.abs(a.length-b.length)>max) return max+1;
+  let prev=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){ const cur=[i]; let mn=i;
+    for(let j=1;j<=b.length;j++){ cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); if(cur[j]<mn) mn=cur[j]; }
+    if(mn>max) return max+1; prev=cur; }
+  return prev[b.length];
+}
+const thr=l=>l<5?0:l<8?1:l<13?2:3;
+function indexPrompt(p){
+  if(p._idx) return p._idx; const m=new Map();
+  p.ans.forEach((a,i)=>{ [a.n,...(a.a||[])].forEach(s=>{ const k=keyOf(s); if(k&&!m.has(k)) m.set(k,i); }); });
+  return p._idx=m;
+}
+function matchAnswer(p,input){
+  const k=keyOf(input); if(!k) return null; const idx=indexPrompt(p);
+  if(idx.has(k)) return {exact:true,ans:p.ans[idx.get(k)]};
+  let best=null,bd=99;
+  for(const [kk,i] of idx){ const t=thr(Math.min(kk.length,k.length)); if(t===0) continue; const d=lev(k,kk,t); if(d<=t&&d<bd){bd=d;best=i;} }
+  return best==null?null:{exact:false,ans:p.ans[best]};
+}
+
+/* ---------------- sound ---------------- */
+let AC=null;
+function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC&&AC.state==='suspended') AC.resume(); return AC; }
+function tone(f,d=.12,type='square',vol=.04,when=0,to=null){
+  if(!SET.sound) return; const a=ac(); if(!a) return;
+  const t=a.currentTime+when, o=a.createOscillator(), g=a.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,t); if(to) o.frequency.exponentialRampToValueAtTime(to,t+d);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+d+.02);
+}
+const SFX={
+  blub(){ tone(260,.18,'sine',.08,0,110); tone(380,.12,'sine',.05,.08,170); },
+  nope(){ tone(150,.1,'square',.035); tone(120,.12,'square',.035,.11); },
+  tick(){ tone(1200,.03,'square',.02); },
+  line(i){ tone(330+i*90,.08,'triangle',.05); },
+  flat(){ tone(880,1.3,'sine',.035); },
+  reveal(t){ const seq={H:[330],G:[392,349],S:[440,554],P:[523,659,784],D:[587,740,880,1175],Z:[523,659,784,1047,1319,1568]}[t]||[];
+    seq.forEach((f,i)=>tone(f,.16,'square',.035,i*.09)); if(t==='Z') [2093,2637,3136].forEach((f,i)=>tone(f,.1,'triangle',.02,.6+i*.07)); },
+  click(){ tone(520,.04,'square',.025); }
+};
+
+/* ---------------- background renderer ---------------- */
+const PX=3;
+let W=0,H=0,DPR=1,PPM=2.6,lw=0,lh=0;
+let cam=-45, camTarget=-45, camFree=true, markerD=0, showMarker=false, tNow=0;
+const bg=document.createElement('canvas'); bg.id='bg';
+const fx=document.createElement('canvas'); fx.id='fx';
+const bx=bg.getContext('2d'), fxx=fx.getContext('2d');
+const world=document.createElement('div'); world.id='world';
+function resize(){
+  W=innerWidth; H=innerHeight; DPR=Math.min(devicePixelRatio||1,2);
+  lw=Math.ceil(W/PX); lh=Math.ceil(H/PX); bg.width=lw; bg.height=lh;
+  fx.width=Math.round(W*DPR); fx.height=Math.round(H*DPR);
+  PPM=H/240;
+}
+const sy=d=>H*0.42+(d-cam)*PPM;
+const depthAtY=y=>cam+(y-H*0.42)/PPM;
+const WATER=[[0,[63,128,180]],[50,[45,101,150]],[200,[27,69,114]],[500,[17,48,79]],[1000,[11,29,51]],[2500,[8,20,40]],[4500,[6,14,29]],[7000,[3,7,15]]];
+const SKY=[[-260,[110,170,215]],[-120,[150,196,228]],[-30,[214,232,240]],[0,[232,241,244]]];
+function lerpStops(stops,d){
+  if(d<=stops[0][0]) return stops[0][1]; for(let i=1;i<stops.length;i++){ if(d<=stops[i][0]){ const [d0,c0]=stops[i-1],[d1,c1]=stops[i]; const t=(d-d0)/(d1-d0); return c0.map((v,j)=>Math.round(v+(c1[j]-v)*t)); } }
+  return stops[stops.length-1][1];
+}
+const rgb=c=>`rgb(${c[0]},${c[1]},${c[2]})`;
+const clouds=Array.from({length:7},(_,i)=>({x:Math.random(),d:-40-Math.random()*150,w:10+Math.random()*16,v:.004+Math.random()*.006}));
+const fishes=Array.from({length:14},()=>({x:Math.random(),d:30+Math.random()*1600,v:(Math.random()<.5?-1:1)*(.01+Math.random()*.02),s:Math.random()<.3?2:1}));
+const snow=Array.from({length:90},()=>({x:Math.random(),y:Math.random(),s:Math.random()<.2?2:1,v:.2+Math.random()*.6}));
+const CAPTIONS=[
+ [22,'l','── the lecture hall lights dim'],[95,'r','most of the class stops scrolling here ──'],[200,'l','── first aid footnote territory'],
+ [330,'r','"this won\'t be on the exam" ──'],[480,'l','── pressure: three blocks of overdue flashcards'],[700,'r','anki review queue: 1,284 ──'],
+ [1000,'l','── THE MIDNIGHT ZONE',1],[1060,'r','2 a.m. pre-exam cramming ──'],[1500,'l','── the attending\'s favorite pimp question'],
+ [2000,'r','case reports where n = 1 ──'],[2500,'l','── the residents stopped following you here'],[3000,'l','── THE ABYSSAL ZONE',1],
+ [3060,'r','uworld\'s meanest question rests here ──'],[3800,'l','── an eponym nobody can pronounce'],[4500,'r','nejm image challenge territory ──'],
+ [5200,'l','── the lecturer\'s own phd thesis'],[6000,'r','THE HADAL ZONE ──',1],[6060,'l','── zebras graze on the trench walls'],
+ [6600,'r','only the course director has been this deep ──'],[7000,'l','── the trench floor. absurd.']
+];
+function noise(n){ const x=Math.sin(n*127.1)*43758.5453; return x-Math.floor(x); }
+function drawBG(dt){
+  // water/sky rows
+  for(let y=0;y<lh;y++){ const d=depthAtY(y*PX+PX/2); bx.fillStyle=rgb(d<0?lerpStops(SKY,d):lerpStops(WATER,d)); bx.fillRect(0,y,lw,1); }
+  const s0=sy(0)/PX;
+  // sun + clouds
+  if(s0>0){
+    const sx=lw*.82, syy=(sy(-112))/PX, r=Math.max(6,lw*.045);
+    bx.fillStyle='rgba(255,243,176,.55)'; pixCircle(sx,syy,r*1.35);
+    bx.fillStyle='#ffe27a'; pixCircle(sx,syy,r);
+    for(const c of clouds){ c.x+=c.v*dt*.05; if(c.x>1.15) c.x=-.15; const cx=c.x*lw, cy=sy(c.d)/PX; if(cy<-10||cy>s0) continue; cloud(cx,cy,c.w); }
+  }
+  // surface
+  if(s0>-4&&s0<lh+4){
+    bx.fillStyle='rgba(205,235,250,.75)'; bx.fillRect(0,Math.floor(s0),lw,1);
+    bx.fillStyle='rgba(205,235,250,.35)'; for(let x=0;x<lw;x+=6){ const o=Math.round(Math.sin(x*.3+tNow*.002)*1); bx.fillRect(x,Math.floor(s0)+1+o,3,1); }
+    boat(lw*.3,Math.floor(s0));
+  }
+  // light rays
+  if(cam<450){ const a=.07*(1-clamp(cam/450,0,1)); bx.fillStyle=`rgba(220,240,255,${a})`;
+    for(let i=0;i<5;i++){ const x0=(i*.22+.05+Math.sin(tNow*.0003+i)*.02)*lw; bx.beginPath(); bx.moveTo(x0,Math.max(0,s0)); bx.lineTo(x0+lw*.05,Math.max(0,s0)); bx.lineTo(x0+lw*.16,lh); bx.lineTo(x0+lw*.08,lh); bx.closePath(); bx.fill(); } }
+  // kelp / rocks / trench per row
+  for(let y=0;y<lh;y+=1){
+    const d=depthAtY(y*PX); if(d<220) continue;
+    if(d<5200){ // kelp strands
+      for(let i=0;i<4;i++){ const on=Math.sin(d/170+i*1.7)>.25; if(!on) continue; const base=i<2?(4+i*7):(lw-26+(i-2)*7); const x=base+Math.sin(d*.045+tNow*.0012+i)*2.2; bx.fillStyle='rgba(2,8,16,.42)'; bx.fillRect(Math.round(x),y,2,1); }
+    }
+    if(d>1300){ // rock edges
+      const k=Math.floor(d/14); const wL=Math.floor(noise(k)*5+(d>5200?(d-5200)/1800*lw*.22:0)+(Math.sin(d/300)>.6?6:0));
+      const wR=Math.floor(noise(k+99)*5+(d>5200?(d-5200)/1800*lw*.22:0)+(Math.sin(d/260+2)>.6?6:0));
+      bx.fillStyle='rgba(4,9,17,.88)'; if(wL>0) bx.fillRect(0,y,wL,1); if(wR>0) bx.fillRect(lw-wR,y,wR,1);
+      if(d>5200&&noise(k*3+y)>.985){ bx.fillStyle=noise(k)>.5?'rgba(255,92,138,.7)':'rgba(77,227,255,.7)'; bx.fillRect(wL-2,y,1,1); bx.fillRect(lw-wR+1,y,1,1); }
+    }
+    if(d>7010){ bx.fillStyle='#03060c'; bx.fillRect(0,y,lw,1); }
+  }
+  // fish
+  for(const f of fishes){ f.x+=f.v*dt*.02; if(f.x>1.1) f.x=-.1; if(f.x<-.1) f.x=1.1; const y=sy(f.d)/PX; if(y<s0+2||y<-5||y>lh+5) continue; fishSil(f.x*lw,y,f.s,f.v>0); }
+  // marine snow
+  if(s0<lh){ bx.fillStyle='rgba(205,222,255,.35)';
+    for(const p of snow){ p.y+=p.v*dt*.00002; const yy=((p.y*lh - cam*PPM/PX*.6)%lh+lh)%lh; if(yy<s0+3) continue; bx.fillRect(Math.floor(p.x*lw+Math.sin(tNow*.0006+p.y*9)*2),Math.floor(yy),p.s,p.s); } }
+}
+function pixCircle(cx,cy,r){ for(let y=-r;y<=r;y++){ const w=Math.sqrt(r*r-y*y); bx.fillRect(Math.round(cx-w),Math.round(cy+y),Math.round(w*2),1); } }
+function cloud(x,y,w){
+  const h=Math.max(3,Math.round(w*.32)); bx.fillStyle='#ffffff';
+  bx.fillRect(Math.round(x),Math.round(y),Math.round(w),h);
+  bx.fillRect(Math.round(x+w*.18),Math.round(y-h*.6),Math.round(w*.45),Math.ceil(h*.7));
+  bx.fillRect(Math.round(x+w*.5),Math.round(y-h*.35),Math.round(w*.35),Math.ceil(h*.5));
+  bx.fillStyle='#d4e5f0'; bx.fillRect(Math.round(x),Math.round(y+h-1),Math.round(w),1);
+}
+function boat(x,s){
+  x=Math.round(x); const b=Math.round(Math.sin(tNow*.002)*1);
+  bx.fillStyle='#14213a'; bx.fillRect(x-14,s-3+b,28,3); bx.fillRect(x-12,s+b,24,1); bx.fillRect(x-6,s-7+b,11,4); bx.fillRect(x+6,s-5+b,4,2);
+  bx.fillRect(x-1,s-17+b,1,10);
+  bx.fillStyle='#ffffff'; bx.fillRect(x,s-17+b,7,5); bx.fillStyle='#ff4f6a'; bx.fillRect(x+3,s-17+b,1,5); bx.fillRect(x,s-15+b,7,1);
+  bx.fillStyle='#e9eef2'; bx.fillRect(x-4,s-6+b,2,1); bx.fillRect(x,s-6+b,2,1);
+}
+function fishSil(x,y,s,right){
+  bx.fillStyle='rgba(3,10,22,.55)'; x=Math.round(x); y=Math.round(y);
+  bx.fillRect(x,y,5*s,2*s); bx.fillRect(right?x-2*s:x+5*s,y-s,2*s,4*s);
+}
+function drawFX(){
+  const c=fxx; c.setTransform(DPR,0,0,DPR,0,0); c.clearRect(0,0,W,H);
+  const rx=W-14; const top=Math.max(0,sy(0));
+  if(top<H){
+    c.strokeStyle='rgba(170,195,230,.35)'; c.lineWidth=2; c.beginPath(); c.moveTo(rx,top); c.lineTo(rx,H); c.stroke();
+    const d0=Math.max(0,Math.floor(depthAtY(0)/20)*20), d1=depthAtY(H);
+    c.font='15px VT323, monospace'; c.textAlign='right'; c.textBaseline='middle';
+    for(let d=d0; d<=d1; d+=20){ const y=sy(d); if(y<top-1) continue; const big=d%100===0; c.strokeStyle=big?'rgba(190,210,240,.55)':'rgba(170,195,230,.3)'; c.beginPath(); c.moveTo(rx-(big?14:7),y); c.lineTo(rx,y); c.stroke(); if(big&&d>0){ c.fillStyle='rgba(170,195,230,.55)'; c.fillText('-'+fmt(d)+'m',rx-18,y); } }
+    c.font='16px VT323, monospace'; c.textBaseline='middle';
+    for(const [d,side,t,zone] of CAPTIONS){ const y=sy(d); if(y<-20||y>H+20) continue; c.fillStyle=zone?'rgba(205,222,245,.75)':'rgba(160,185,220,.5)'; c.font=(zone?'19px':'16px')+' VT323, monospace'; if(side==='l'){ c.textAlign='left'; c.fillText(t,14,y);} else { c.textAlign='right'; c.fillText(t,W-64,y);} }
+    if(showMarker){ const y=sy(markerD); if(y>-10&&y<H+10){ c.strokeStyle='#ff5c8a'; c.lineWidth=2; c.beginPath(); c.moveTo(rx-42,y); c.lineTo(rx-2,y); c.stroke(); c.fillStyle='#ff5c8a'; c.beginPath(); c.moveTo(rx+6,y-6); c.lineTo(rx-4,y); c.lineTo(rx+6,y+6); c.fill(); c.font='15px VT323, monospace'; c.textAlign='right'; c.fillText('YOU',rx-46,y); } }
+  }
+}
+/* mascot */
+const mascot=document.createElement('img'); mascot.className='mascot';
+let mascotY=0, mascotTarget=null, mascotX=.08, gold=false;
+function setMascot(){ mascot.src=gold?MASCOT_GOLD():MASCOT(); mascot.classList.toggle('gold',gold); }
+let lastBub=0;
+let lastT=performance.now();
+const frameHooks=new Set();
+function frame(t){
+  const dt=Math.min(60,t-lastT); lastT=t; tNow=t;
+  if(camFree) cam+=(camTarget-cam)*Math.min(1,dt*.004);
+  for(const h of frameHooks) h(t,dt);
+  drawBG(dt); drawFX();
+  // mascot
+  const ty = mascotTarget==null? H*.6 : (typeof mascotTarget==='function'?mascotTarget():mascotTarget);
+  mascotY += (ty-mascotY)*Math.min(1,dt*.005);
+  mascot.style.transform=`translate(${Math.round(W*mascotX+Math.sin(t*.0011)*8)}px,${Math.round(mascotY+Math.sin(t*.002)*5-30)}px)`;
+  if(t-lastBub>1400 && view!=='home' && !SET.reduce){ lastBub=t; bubble(W*mascotX+18+Math.sin(t*.0011)*8, mascotY-34); }
+  requestAnimationFrame(frame);
+}
+function bubble(x,y){ const b=document.createElement('div'); b.className='bub'; b.style.left=x+'px'; b.style.top=y+'px'; b.style.setProperty('--dx',(Math.random()*30-15)+'px'); document.body.appendChild(b); setTimeout(()=>b.remove(),2700); }
+
+/* ---------------- capabilities ---------------- */
+const CAP={db:null,user:null,sample:null,art:null,uid:null,canEdit:false,ready:false};
+async function initCaps(){
+  if(!window.claude||!window.claude.use) { CAP.ready=true; return; }
+  const [db,user,sample,art]=await Promise.all(['db','user','sample','artifact'].map(n=>window.claude.use(n).catch(()=>null)));
+  Object.assign(CAP,{db,user,sample,art});
+  try{ CAP.uid = user? await user.id() : null; }catch(e){}
+  try{ CAP.canEdit = user? !!(await user.canEdit()) : false; }catch(e){}
+  CAP.ready=true; onCapsReady();
+}
+
+/* ---------------- packs ---------------- */
+function localPacks(){ return LS.get('localPacks',[]); }
+function allPacks(){
+  const pub=DATA.packs.map(p=>({...p,_pub:true}));
+  const loc=localPacks().filter(p=>!pub.some(q=>q.id===p.id)).map(p=>({...p,_local:true}));
+  const list=[...pub,...loc];
+  return list.length?list.concat([DEMO]):[DEMO];
+}
+function findPack(id){ return allPacks().find(p=>p.id===id)||null; }
+function featuredPack(){
+  const h=location.hash.match(/^#dive-([a-z0-9-]+)$/i); if(h){ const p=findPack(h[1]); if(p) return p; }
+  const last=LS.get('lastPack',null); if(last){ const p=findPack(last); if(p) return p; }
+  return DATA.packs.length? DATA.packs[DATA.packs.length-1] : (localPacks().slice(-1)[0]||DEMO);
+}
+const maxScore=p=>p.prompts.length*100;
+function shareLink(p){ const base=ON_CLAUDE?ART_URL:location.href.split('#')[0]; return base+(p&&!p.demo?'#dive-'+p.id:''); }
+
+/* ---------------- runs ---------------- */
+let POD={runs:[],loaded:false};
+function localRun(id){ return LS.get('runs',{})[id]||null; }
+function saveLocalRun(id,run){ const r=LS.get('runs',{}); r[id]=run; LS.set('runs',r); }
+async function loadPod(){
+  POD.loaded=false; if(!CAP.db) { POD.loaded=true; return POD; }
+  try{
+    const snap=await Promise.race([CAP.db.collection('runs').get(), new Promise((_,rej)=>setTimeout(()=>rej('timeout'),10000))]);
+    POD.runs=snap.docs.map(d=>({uid:d.id,...(d.data()||{})}));
+  }catch(e){ POD.runs=[]; }
+  POD.loaded=true; return POD;
+}
+function podFor(packId){ return POD.runs.filter(r=>r.packs&&r.packs[packId]).map(r=>({uid:r.uid,name:r.name||'diver',...r.packs[packId]})); }
+async function saveRun(pack,run){
+  saveLocalRun(pack.id,run);
+  if(!CAP.db||!CAP.uid) return false;
+  try{
+    const ref=CAP.db.doc('runs/'+CAP.uid); const s=await ref.get();
+    if(s.exists) await ref.update({name:diverName(),packs:{[pack.id]:run}});
+    else await ref.set({name:diverName(),packs:{[pack.id]:run}});
+    return true;
+  }catch(e){ return false; }
+}
+function diverName(){ return (LS.get('name','')||'anonymous diver').slice(0,24); }
+
+/* ---------------- DOM skeleton ---------------- */
+const root=$('#root');
+document.body.prepend(bg,fx,world); document.body.appendChild(mascot);
+root.innerHTML=`
+<div class="crt"></div><div class="vignette"></div>
+<button class="iconbtn" id="menuBtn" aria-label="Menu">☰</button>
+<button class="iconbtn" id="soundBtn" aria-label="Sound"></button>
+<button class="iconbtn" id="setBtn" aria-label="Settings">⚙</button>
+<div id="hud">
+  <div class="pod ch" id="podD"><div class="l">DEPTH</div><div class="v" id="hudD">0m</div></div>
+  <div class="prog"><div id="squares"></div><div class="cap" id="progCap">PROMPT 1 OF 7</div></div>
+  <div class="pod ch" id="podS"><div class="l">SCORE</div><div class="v" id="hudS">0</div></div>
+</div>
+<section class="screen" id="s-home"></section>
+<section class="screen" id="s-play"></section>
+<section class="screen" id="s-reveal"></section>
+<section class="screen" id="s-results"></section>
+<section class="screen" id="s-library"></section>
+<section class="screen" id="s-lab"></section>
+<div id="menu"><div class="shade"></div><nav class="dr ch">
+  <button class="x" aria-label="Close">×</button>
+  <div class="logo small" style="margin-bottom:10px">ZEBRILLION</div>
+  <a data-go="home">▼ The dive</a><a data-go="library">⟲ Lecture library</a><a data-go="lab">＋ Build a dive</a><a data-go="howto">? How to play</a>
+  <div class="ptitle" style="margin-top:20px">SETTINGS</div>
+  <label class="toggle">Sound <input type="checkbox" id="optSound"></label>
+  <label class="toggle">Colorblind tiers <input type="checkbox" id="optCb"></label>
+  <label class="toggle">Reduce motion <input type="checkbox" id="optReduce"></label>
+  <p class="note" style="margin-top:18px">A rarity dive for med school lectures. Rare answers sink you deeper; obvious ones float.<br><br>Mechanic inspired by Krillion (krillion.io) — go play the original daily dive too.</p>
+</nav></div>
+<div id="toast"></div>`;
+
+let view='home';
+function show(v){
+  view=v; $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+v));
+  document.body.className=(SET.cb?'cb ':'')+(SET.reduce?'reduce ':'')+({home:'home',play:'play',reveal:'play',results:'results'}[v]||'panel');
+}
+function toast(t,ms=2200){ const el=$('#toast'); el.textContent=t; el.style.display='block'; clearTimeout(el._t); el._t=setTimeout(()=>el.style.display='none',ms); }
+function applySettings(){
+  LS.set('set',SET); $('#soundBtn').textContent=SET.sound?'🔊':'🔇';
+  document.body.classList.toggle('cb',SET.cb); document.body.classList.toggle('reduce',SET.reduce);
+  $('#optSound').checked=SET.sound; $('#optCb').checked=SET.cb; $('#optReduce').checked=SET.reduce;
+  for(const k in sprCache) delete sprCache[k]; setMascot();
+}
+$('#soundBtn').onclick=()=>{ SET.sound=!SET.sound; applySettings(); SFX.click(); };
+$('#setBtn').onclick=()=>$('#menu').classList.add('on');
+$('#menuBtn').onclick=()=>{ $('#menu').classList.add('on'); };
+$('#menu .shade').onclick=$('#menu .x').onclick=()=>$('#menu').classList.remove('on');
+$('#optSound').onchange=e=>{SET.sound=e.target.checked;applySettings();};
+$('#optCb').onchange=e=>{SET.cb=e.target.checked;applySettings(); rerender();};
+$('#optReduce').onchange=e=>{SET.reduce=e.target.checked;applySettings();};
+$$('#menu [data-go]').forEach(a=>a.onclick=()=>{ $('#menu').classList.remove('on'); const g=a.dataset.go;
+  if(view==='play'&&G&&G.phase!=='done'){ if(!confirmLeave()) return; }
+  if(g==='howto'){ goHome(); setTimeout(()=>toggleHow(true),50); } else if(g==='home') goHome(); else if(g==='library') goLibrary(); else if(g==='lab') goLab(); });
+function confirmLeave(){ abortDive(); return true; }
+function rerender(){ if(view==='home') goHome(); else if(view==='library') goLibrary(); else if(view==='results') renderResults(); }
+
+/* ---------------- HOME ---------------- */
+let homePack=null;
+function goHome(){
+  stopWorld(); show('home'); homePack=featuredPack(); LS.set('lastPack',homePack.id);
+  camFree=true; camTarget=-45; showMarker=false; mascotTarget=()=>sy(0)-4; mascotX=.62; gold=false; setMascot();
+  const p=homePack, idx=allPacks().indexOf(allPacks().find(x=>x.id===p.id))+1;
+  const run=localRun(p.id); const nd=podFor(p.id).length;
+  $('#s-home').innerHTML=`
+  <div class="home-top">
+    <h1 class="logo">ZEBRILLION</h1>
+    <div class="sub">THE LECTURE DIVE</div>
+    <div class="tag">${p.prompts.length} prompts · 25 seconds each · rarer answers sink deeper</div>
+    <button class="howto-link" id="howBtn">how to play</button>
+  </div>
+  <div class="howto ch hidden" id="how"></div>
+  <div class="home-bottom">
+    <div class="packcard ch" id="pcard" title="Open the lecture library">
+      <div class="badge">${p.demo?'DEMO DIVE':p._local?'ON THIS DEVICE':'NOW DIVING'}</div>
+      <img src="${MASCOT_GOLD()}" alt="">
+      <div style="min-width:0"><div class="pt">${esc(p.title)}</div><div class="pc">${esc(p.course||'')}</div></div>
+      <div class="divers">${nd?nd+' dove':'lecture #'+idx}</div>
+    </div>
+    ${run&&!run.practice?`<div class="played">YOU DOVE THIS ONE · ${run.score} · -${fmt(run.score*10)}m · <a href="#" id="seeRes" style="color:#7fe3ff">see your dive</a></div>`:''}
+    <div class="namebox">DIVER NAME <input id="dname" maxlength="24" placeholder="for the pod board" value="${esc(LS.get('name',''))}"></div>
+    <button class="btn big ch" id="go">${run&&!run.practice?'▼ PRACTICE DIVE ▼':'▼ BEGIN DESCENT ▼'}</button>
+    <div class="homerow"><span class="lbl">LECTURE #${idx}</span>
+      <button class="btn ghost ch" id="libBtn">LIBRARY ⟲</button>
+      <button class="btn ghost ch" id="labBtn">BUILD A DIVE ＋</button></div>
+  </div>`;
+  $('#howBtn').onclick=()=>toggleHow();
+  $('#pcard').onclick=goLibrary; $('#libBtn').onclick=goLibrary; $('#labBtn').onclick=goLab;
+  $('#dname').oninput=e=>LS.set('name',e.target.value.trim());
+  $('#go').onclick=()=>{ ac(); SFX.blub(); startDive(p,!!(run&&!run.practice)); };
+  const sr=$('#seeRes'); if(sr) sr.onclick=e=>{ e.preventDefault(); showStoredResults(p); };
+}
+function toggleHow(force){
+  const el=$('#how'); if(!el) return; const on=force??el.classList.contains('hidden');
+  if(!on){ el.classList.add('hidden'); return; }
+  el.innerHTML=`<h3>HOW TO DIVE</h3>
+   <p>SEVEN PROMPTS, PULLED FROM ONE LECTURE.</p>
+   <p>25 SECONDS TO NAME ONE THING. WRONG? TRY AGAIN TILL TIME RUNS OUT.</p>
+   <p>THE ANSWER EVERYONE BLURTS OUT IS A HORSE. IT FLOATS.</p>
+   <p>THE ONE THAT FEELS CLEVER? THE GUNNER SAID IT TOO.</p>
+   <p>REMEMBER THE THROWAWAY LINE FROM SLIDE 47 AND YOU SINK.</p>
+   <p>EVERY POINT IS 10 METRES. 700 IS THE TRENCH FLOOR.</p>
+   <p>ONE SCORED DIVE PER LECTURE. PRACTICE AS MUCH AS YOU LIKE.</p>
+   <div class="tiers">${ORDER.map(t=>`<img src="${tierSprite(t)}" alt=""><span style="color:var(--t-${t})">${TIERS[t].name}</span><span>${TIERS[t].pts}</span>`).join('')}</div>
+   <div style="text-align:right;margin-top:14px"><button class="btn ghost sm ch" id="howX">GOT IT</button></div>`;
+  el.classList.remove('hidden'); $('#howX').onclick=()=>el.classList.add('hidden');
+}
+
+/* ---------------- DIVE ---------------- */
+let G=null;
+const TIME=25;
+function startDive(pack,practice){
+  stopWorld();
+  G={pack,practice,idx:0,D:0,score:0,picks:[],phase:'intro',pendingSugg:null};
+  show('play'); cam=-30; camTarget=-30; showMarker=true; markerD=0; gold=false; setMascot(); mascotX=.07; mascotTarget=()=>H*.62;
+  hud(); nextPrompt(true);
+}
+function hud(){
+  $('#hudD').textContent=fmt(G?G.D:0)+'m'; $('#hudS').textContent=G?G.score:0;
+  const n=G.pack.prompts.length;
+  $('#squares').innerHTML=Array.from({length:n},(_,i)=>{ const pk=G.picks[i]; const c=pk?(pk.t==='X'?'var(--t-X)':`var(--t-${pk.t})`):''; return `<span class="sq${i===G.idx&&G.phase!=='done'&&!pk?' cur':''}" style="${c?`background:${c};border-color:${c}`:''}"></span>`; }).join('');
+  $('#progCap').textContent=G.phase==='done'?'DIVE COMPLETE':`PROMPT ${Math.min(G.idx+1,n)} OF ${n}`+(G.practice?' · PRACTICE':'');
+}
+let timerHook=null;
+function nextPrompt(first){
+  clearWorld();
+  const p=G.pack.prompts[G.idx]; G.phase='countin'; G.pendingSugg=null; hud();
+  camFree=true; camTarget=G.D+22; markerD=G.D;
+  $('#s-play').innerHTML=`
+   <div class="pcard ch" id="pc"><div class="n">PROMPT ${G.idx+1} OF ${G.pack.prompts.length}</div><div class="q">${esc(p.q)}</div><div class="h">▼ rarer answers sink deeper ▼</div></div>
+   <div class="countin ch" id="ci">descending · the clock starts in <b id="cin">3</b></div>
+   <div class="msg" id="msg" aria-live="polite"></div>
+   <div class="abar gone" id="abar">
+     <div class="dial" id="dial">25</div>
+     <div class="inwrap"><input class="ans" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type one answer…" aria-label="Your answer"><div class="tbar" id="tbar" style="width:100%"></div></div>
+     <button class="btn pink dive ch" id="diveBtn">DIVE</button>
+   </div>`;
+  let c=SET.reduce?1:3; const tick=()=>{ const el=$('#cin'); if(!el) return; el.textContent=c; if(c<=0){ beginClock(); return; } c--; G._ci=setTimeout(tick,850); };
+  tick();
+}
+function beginClock(){
+  $('#ci')?.remove(); const ab=$('#abar'); ab.classList.remove('gone'); const inp=$('#ans'); inp.focus();
+  G.phase='answer'; G.t0=performance.now(); let lastSec=TIME;
+  inp.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } };
+  inp.oninput=()=>{ if(G.pendingSugg && keyOf(inp.value)!==keyOf(G.pendingSugg.n)) { G.pendingSugg=null; } };
+  $('#diveBtn').onclick=()=>{ submit(); inp.focus(); };
+  timerHook=(t)=>{
+    if(G.phase!=='answer') return;
+    const left=Math.max(0,TIME-(t-G.t0)/1000); const s=Math.ceil(left);
+    const dial=$('#dial'), bar=$('#tbar'); if(!dial) return;
+    dial.textContent=s; dial.style.setProperty('--p',(left/TIME*100)+'%'); bar.style.width=(left/TIME*100)+'%';
+    const hot=left<=5; dial.classList.toggle('hot',hot); bar.classList.toggle('hot',hot);
+    if(hot&&s!==lastSec&&s>0) SFX.tick(); lastSec=s;
+    if(left<=0){ timeout(); }
+  };
+  frameHooks.add(timerHook);
+}
+function setMsg(html,cls=''){ const m=$('#msg'); if(m){ m.className='msg '+cls; m.innerHTML=html; } }
+function submit(){
+  if(!G||G.phase!=='answer') return; const inp=$('#ans'); const v=inp.value.trim(); if(!v) return;
+  const p=G.pack.prompts[G.idx];
+  if(G.pendingSugg && keyOf(v)===keyOf(G.pendingSugg.n)){ land(G.pendingSugg,v); return; }
+  const m=matchAnswer(p,v);
+  if(!m){ SFX.nope(); setMsg(`"${esc(v)}": no pulse. try again`); inp.select(); return; }
+  if(m.exact){ land(m.ans,v); return; }
+  G.pendingSugg=m.ans; inp.value=m.ans.n; SFX.click();
+  setMsg(`"${esc(v)}" → <span class="a">"${esc(m.ans.n)}"</span><small>submit again to confirm · or edit</small>`,'sugg');
+}
+function timeout(){
+  frameHooks.delete(timerHook); G.phase='landed';
+  G.picks[G.idx]={a:null,t:'X',pts:0,n:null}; SFX.flat();
+  $('#abar')?.classList.add('gone'); $('#pc')?.classList.add('gone'); setMsg('');
+  setTimeout(()=>{ if(G&&G.phase==='landed') showReveal(); },500);
+}
+let sinkHook=null;
+function land(ans,typed){
+  frameHooks.delete(timerHook); G.phase='sinking'; SFX.blub();
+  const t=ans.t, pts=TIERS[t].pts;
+  G.picks[G.idx]={n:ans.n,t,pts,typed};
+  $('#abar').classList.add('gone'); $('#pc').classList.add('gone'); setMsg('');
+  // tier lines in world
+  const base=G.D;
+  const lines=ORDER.filter(k=>G.pack.prompts[G.idx].ans.some(a=>a.t===k)||k==='H').map((k,i)=>{
+    const el=document.createElement('div'); el.className='tierline'; el.style.setProperty('--tc',`var(--t-${k})`);
+    el.innerHTML=`<span class="tg"><img src="${tierSprite(k)}" alt="">${TIERS[k].name==='ONE IN A ZEBRILLION'?'ZEBRA':TIERS[k].name} · ${TIERS[k].pts}</span>`;
+    world.appendChild(el); return {k,d:base+TIERS[k].pts*10,el,passed:false};
+  });
+  const card=document.createElement('div'); card.className='sinkcard ch'; card.textContent=`"${ans.n}"`; world.appendChild(card);
+  const target=base+pts*10, dur=SET.reduce?400:(900+pts*15), t0=performance.now()+350;
+  let cardD=base; camFree=false;
+  const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+  let li=0;
+  sinkHook=(now)=>{
+    const k=clamp((now-t0)/dur,0,1); cardD=base+(target-base)*ease(k);
+    cam=cardD+8; markerD=cardD; G.Dlive=cardD;
+    $('#hudD').textContent=fmt(cardD)+'m';
+    card.style.top=sy(cardD)+'px';
+    for(const L of lines){ L.el.style.top=sy(L.d)+'px'; if(!L.passed&&cardD>=L.d-0.5){ L.passed=true; L.el.classList.add('passed'); SFX.line(li++); } }
+    if(k>=1){ frameHooks.delete(sinkHook); sinkHook=null; G.D=target; G.score+=pts; hud(); setTimeout(()=>{ if(G&&G.phase==='sinking') showReveal(); },650); }
+  };
+  frameHooks.add(sinkHook);
+  mascotTarget=()=>sy(cardD)+10;
+}
+function clearWorld(){ world.innerHTML=''; }
+function stopWorld(){ if(timerHook) frameHooks.delete(timerHook); if(sinkHook) frameHooks.delete(sinkHook); clearTimeout(G&&G._ci); clearWorld(); }
+function abortDive(){ stopWorld(); G=null; }
+async function crowdLine(pack,qi,name){
+  const runs=podFor(pack.id); if(runs.length<2) return '';
+  const k=keyOf(name); const n=runs.filter(r=>r.picks&&r.picks[qi]&&r.picks[qi].n&&keyOf(r.picks[qi].n)===k).length;
+  return `${n} of ${runs.length} divers in your pod said this`;
+}
+function showReveal(){
+  G.phase='reveal'; show('reveal'); camFree=true; camTarget=G.D+60; markerD=G.D;
+  clearWorld(); mascotTarget=()=>H*.2; mascotX=.1;
+  const pk=G.picks[G.idx], last=G.idx===G.pack.prompts.length-1, T=TIERS[pk.t];
+  const ans=pk.n?G.pack.prompts[G.idx].ans.find(a=>a.n===pk.n):null;
+  if(pk.t==='Z'){ gold=true; setMascot(); burst(); }
+  const fact=ans&&ans.f?`<div class="fact">${ans.s?`<span class="src">${esc(ans.s.toUpperCase())}</span>`:''}${esc(ans.f)}</div>`:'';
+  $('#s-reveal').innerHTML=`<div class="reveal" style="--tc:var(--t-${pk.t})">
+    ${pk.t==='X'?`<svg class="flat" viewBox="0 0 420 60"><path d="M0 30 H90 L104 8 L118 52 L130 30 H210 L222 14 L232 44 L240 30 H420"/></svg>`:`<img class="spr" src="${tierSprite(pk.t)}" alt="">`}
+    <div class="tn">${pk.t==='X'?'FLATLINE':T.name}</div>
+    <div class="aw">${pk.n?`“${esc(pk.n)}”`:'—'}</div>
+    <div class="pts"><b>+${pk.pts} PTS</b>${pk.pts?` · sink ${fmt(pk.pts*10)}m`:''}</div>
+    <div class="fl">${pk.t==='Z'?'One in a zebrillion. Nobody else went this deep.':T.fl}</div>
+    ${fact}
+    <div class="crowd" id="crowd"></div>
+  </div>
+  <button class="btn revbtn ch" id="desc" style="border-color:#ff8fb0">${last?'SURFACE ▲':'DESCEND ▼'}</button>`;
+  hud(); SFX.reveal(pk.t);
+  if(pk.n) crowdLine(G.pack,G.idx,pk.n).then(s=>{ const c=$('#crowd'); if(c) c.textContent=s; });
+  const go=()=>{ document.removeEventListener('keydown',kd); if(!G||view!=='reveal') return; if(last) finishDive(); else { G.idx++; show('play'); mascotTarget=()=>H*.62; mascotX=.07; nextPrompt(); } };
+  const kd=e=>{ if(e.key==='Enter'){ e.preventDefault(); go(); } };
+  setTimeout(()=>document.addEventListener('keydown',kd),400);
+  $('#desc').onclick=()=>{ SFX.click(); go(); };
+}
+function burst(){ if(SET.reduce) return; for(let i=0;i<46;i++){ const p=document.createElement('div'); p.className='zp'; p.style.left=W/2+'px'; p.style.top=H*.36+'px'; const a=Math.random()*Math.PI*2, r=120+Math.random()*260; p.style.setProperty('--dx',Math.cos(a)*r+'px'); p.style.setProperty('--dy',Math.sin(a)*r+'px'); document.body.appendChild(p); setTimeout(()=>p.remove(),1700); } }
+async function finishDive(){
+  G.phase='done'; hud();
+  const run={score:G.score,max:maxScore(G.pack),picks:G.picks.map(p=>({n:p.n,t:p.t,pts:p.pts})),at:Date.now()};
+  G.run=run;
+  if(!G.practice){ G.saved=await saveRun(G.pack,run); if(CAP.db) await loadPod(); }
+  else { const r=localRun(G.pack.id); if(!r) saveLocalRun(G.pack.id,{...run,practice:true}); }
+  renderResults();
+}
+function showStoredResults(pack){
+  const run=localRun(pack.id); if(!run) return;
+  G={pack,practice:false,idx:pack.prompts.length-1,D:run.score*10,score:run.score,picks:run.picks,phase:'done',run,stored:true};
+  show('results'); renderResults();
+}
+
+/* ---------------- RESULTS ---------------- */
+function simulateCurve(pack){
+  const base={H:.34,G:.1,S:.24,P:.15,D:.09,Z:.015}, miss=.05, N=2500; const scores=[];
+  const per=pack.prompts.map(p=>{ const have=ORDER.filter(t=>p.ans.some(a=>a.t===t)); const ws=have.map(t=>base[t]); const tot=ws.reduce((a,b)=>a+b,0)+miss; return {have,ws:ws.map(w=>w/tot)}; });
+  for(let i=0;i<N;i++){ let s=0; for(const q of per){ let r=Math.random(); for(let j=0;j<q.have.length;j++){ if(r<q.ws[j]){ s+=TIERS[q.have[j]].pts; break; } r-=q.ws[j]; } } scores.push(s); }
+  return scores;
+}
+function curveSVG(scores,mine,max){
+  const w=600,h=150,pad=8, bins=60; const bw=max/bins; const hist=new Array(bins+1).fill(0);
+  scores.forEach(s=>hist[Math.min(bins,Math.floor(s/bw))]++);
+  const sm=hist.map((_,i)=>{ let a=0,n=0; for(let k=-3;k<=3;k++){ const v=hist[i+k]; if(v!=null){ const wgt=Math.exp(-k*k/4); a+=v*wgt; n+=wgt; } } return a/n; });
+  const mx=Math.max(...sm,1e-6); const X=s=>pad+(w-2*pad)*s/max, Y=v=>h-24-(h-40)*v/mx;
+  let d=`M${X(0)} ${Y(0)}`; sm.forEach((v,i)=>d+=` L${X(i*bw).toFixed(1)} ${Y(v).toFixed(1)}`);
+  const mv=sm[Math.min(bins,Math.floor(mine/bw))];
+  const ticks=[]; for(let s=0;s<=max;s+=100) ticks.push(s);
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%"><defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#4de3ff" stop-opacity=".45"/><stop offset="1" stop-color="#4de3ff" stop-opacity=".02"/></linearGradient></defs>
+   <path d="${d} L${X(max)} ${h-24} L${X(0)} ${h-24} Z" fill="url(#cg)"/><path d="${d}" fill="none" stroke="#5fc8ea" stroke-width="2.5"/>
+   <line x1="${pad}" x2="${w-pad}" y1="${h-24}" y2="${h-24}" stroke="rgba(125,147,184,.35)"/>
+   <line x1="${X(mine)}" x2="${X(mine)}" y1="${Y(mv)}" y2="${h-24}" stroke="#ff5c8a" stroke-width="2.5"/><circle cx="${X(mine)}" cy="${Y(mv)}" r="5" fill="#ff5c8a"/>
+   ${ticks.map(s=>`<text x="${X(s)}" y="${h-4}" fill="${Math.abs(s-mine)<50?'transparent':'#5c7398'}" font-size="15" text-anchor="middle">${s}</text>`).join('')}
+   <text x="${X(mine)}" y="${h-4}" fill="#ff5c8a" font-size="16" text-anchor="middle">YOU</text></svg>`;
+}
+function logSVG(picks){
+  const n=picks.length, w=600,h=330, L=46, R=20, T=26, B=34; const X=i=>L+(w-L-R)*(n===1?.5:i/(n-1)), Y=p=>T+(h-T-B)*p/100;
+  let g=''; [0,25,50,75,100].forEach(v=>{ g+=`<line x1="${L}" x2="${w-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(125,147,184,.13)" stroke-dasharray="4 5"/><text x="${L-10}" y="${Y(v)+5}" fill="#5c7398" font-size="14" text-anchor="end">${v?'-'+v:'0m'}</text>`; });
+  picks.forEach((p,i)=>{ const x=X(i), c=p.t==='X'?'#5d739c':tcol(p.t);
+    if(p.t==='X'){ g+=`<circle cx="${x}" cy="${Y(0)+10}" r="8" fill="none" stroke="${c}" stroke-dasharray="3 3"/>`; }
+    else { g+=`<line x1="${x}" x2="${x}" y1="${Y(0)}" y2="${Y(p.pts)}" stroke="${c}" stroke-opacity=".7"/><image href="${tierSprite(p.t)}" x="${x-11}" y="${Y(p.pts)-11}" width="22" height="22" style="image-rendering:pixelated"/>`; }
+    g+=`<text x="${x}" y="${h-8}" fill="#5c7398" font-size="15" text-anchor="middle">${i+1}</text>`; });
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%">${g}</svg>`;
+}
+const BEARING=[[0,150,'H','Hoofbeats. Plenty of ocean left below you.'],[151,250,'S','Swimming with the class.'],[251,350,'P','Below the thermocline. Pearl energy.'],[351,449,'D','Attending-level dive.'],[450,99999,'Z','One in a zebrillion. Trench dweller. Absurd.']];
+function shareText(pack,run){
+  return `ZEBRILLION 🦓 ${pack.title}\n${run.score}/${run.max} · -${fmt(run.score*10)}m\n${run.picks.map(p=>TIERS[p.t].emoji).join('')}${shareLink(pack)?'\n'+shareLink(pack):''}`;
+}
+async function copyText(t){
+  try{ await navigator.clipboard.writeText(t); toast('COPIED. PASTE IT IN THE GROUP CHAT.'); }
+  catch(e){ modal(`<div class="ptitle">COPY THIS</div><textarea readonly>${esc(t)}</textarea><div style="text-align:right;margin-top:10px"><button class="btn ghost sm ch" data-close>CLOSE</button></div>`, m=>{ const ta=$('textarea',m); ta.focus(); ta.select(); }); }
+}
+function modal(html,after){ const m=document.createElement('div'); m.className='modal'; m.innerHTML=`<div class="box ch">${html}</div>`; document.body.appendChild(m); m.onclick=e=>{ if(e.target===m||e.target.hasAttribute('data-close')) m.remove(); }; after&&after(m); return m; }
+function renderResults(){
+  if(!G||!G.run) return; show('results'); const pack=G.pack, run=G.run, max=run.max;
+  camFree=true; camTarget=G.D+80; markerD=G.D; showMarker=false; mascotTarget=()=>H*.85; mascotX=.04;
+  hud();
+  const pod=podFor(pack.id).filter(r=>typeof r.score==='number');
+  const usePod=pod.length>=3; const scores=usePod?pod.map(r=>r.score):simulateCurve(pack);
+  const better=Math.round(100*scores.filter(s=>s<run.score).length/Math.max(1,scores.length));
+  const band=BEARING.find(b=>run.score>=b[0]&&run.score<=b[1]);
+  const catchRows=pack.prompts.map((p,i)=>{ const pk=run.picks[i]||{t:'X',pts:0};
+    const counts={}; pod.forEach(r=>{ const n=r.picks&&r.picks[i]&&r.picks[i].n; if(n){ const k=keyOf(n); counts[k]=(counts[k]||0)+1; } });
+    const list=[...p.ans].sort((a,b)=>TIERS[b.t].pts-TIERS[a.t].pts||a.n.localeCompare(b.n)).map(a=>{ const mine=pk.n===a.n; const c=counts[keyOf(a.n)];
+      return `<div class="li${mine?' mine':''}"><img src="${tierSprite(a.t)}" alt=""><span class="nm">${esc(a.n)}${a.s?` <span class="sl">${esc(a.s)}</span>`:''}${c?` <span class="cr">×${c}</span>`:''}${(mine||a.t==='Z'||SHOWF)&&a.f?`<span class="ff">${esc(a.f)}</span>`:''}</span><span class="pv" style="color:var(--t-${a.t})">+${TIERS[a.t].pts}</span></div>`; }).join('');
+    return `<div class="row"><div class="top"><span class="num">${i+1}</span>${pk.t==='X'?'<span style="width:22px;text-align:center;color:#5d739c">◌</span>':`<img src="${tierSprite(pk.t)}" alt="">`}<div class="qq"><div class="q">${esc(p.q)}</div><div class="a">${pk.n?esc(pk.n):'—'}</div></div><span class="pp" style="color:var(--t-${pk.t})">${pk.pts}</span><span class="plus">+</span></div><div class="list">${list}</div></div>`; }).join('');
+  const podRows=[...pod].sort((a,b)=>b.score-a.score).map((r,i)=>`<div class="pr${r.uid===CAP.uid?' me':''}"><span class="rk">${i+1}</span><span class="nm">${esc(r.name||'diver')}</span><span class="sc">${r.score}</span><span class="dp">-${fmt(r.score*10)}m</span></div>`).join('');
+  $('#s-results').innerHTML=`<div class="scroll"><div class="wrap">
+   <div class="rhead"><div class="logo small">ZEBRILLION</div><div class="dc">${G.practice?'PRACTICE · ':''}${esc(pack.title.toUpperCase())} · COMPLETE</div></div>
+   <div class="bigscore"><span class="s">${run.score}</span><span class="of">/${max}</span><span class="dm">-${fmt(run.score*10)}m</span><img src="${gold?MASCOT_GOLD():MASCOT()}" alt=""></div>
+   ${curveSVG(scores,run.score,max)}
+   <div class="pct">BETTER THAN ${better}% OF ${usePod?'DIVERS ON THIS LECTURE':'A PROJECTED CLASS'}</div>
+   ${usePod?'':`<div class="note">${CAP.db?'The curve switches to your real pod once 3 people have dived this lecture.':'Projected from the answer key. Real pod curves appear when divers are signed in.'}</div>`}
+   <div class="ptitle">DIVE LOG <span>DEEPER = RARER</span></div>
+   ${logSVG(run.picks)}
+   <div class="ptitle">THE BEARING</div>
+   <table class="bear">${BEARING.map(b=>`<tr class="${b===band?'me':''}"><td><img src="${tierSprite(b[2])}" alt=""></td><td>${b[0]}–${b[1]>9999?max:b[1]}</td><td>${b[3]}</td></tr>`).join('')}</table>
+   <div class="actions"><button class="btn pink ch" id="cp">COPY RESULT</button><button class="btn ghost ch" id="again">PRACTICE AGAIN ↻</button><button class="btn ghost ch" id="hm">SURFACE ▲</button></div>
+   ${G.practice?'<p class="note">Practice dives don\'t count toward the pod board.</p>':(G.saved||G.stored)?'':(CAP.db?'<p class="note">Your dive is saved on this device. The pod board only takes dives from collaborators on this page.</p>':'<p class="note">Saved on this device. Copy your result into the group chat to flex.</p>')}
+   <div class="ptitle">THE POD <span>${pod.length} DIVER${pod.length===1?'':'S'}</span></div>
+   <div class="pod-list">${podRows||'<p class="note">No pod scores yet. Send the link around.</p>'}</div>
+   <div class="ptitle">THE CATCH <span>TAP A PROMPT FOR EVERY ANSWER</span></div>
+   <label class="toggle" style="padding:0 4px 8px"><span class="note">Show the study fact for every answer</span><input type="checkbox" id="showf" ${SHOWF?'checked':''}></label>
+   <div class="catch">${catchRows}</div>
+  </div></div>`;
+  $('#cp').onclick=()=>copyText(shareText(pack,run));
+  $('#again').onclick=()=>startDive(pack,true);
+  $('#hm').onclick=goHome;
+  $('#showf').onchange=e=>{ SHOWF=e.target.checked; const open=$$('.catch .row').map(r=>r.classList.contains('open')); const st=$('.scroll').scrollTop; renderResults(); $$('.catch .row').forEach((r,i)=>r.classList.toggle('open',open[i])); $('.scroll').scrollTop=st; };
+  $$('.catch .top').forEach(t=>t.onclick=()=>{ const r=t.parentElement; r.classList.toggle('open'); t.querySelector('.plus').textContent=r.classList.contains('open')?'−':'+'; });
+}
+let SHOWF=false;
+
+/* ---------------- LIBRARY ---------------- */
+function goLibrary(){
+  stopWorld(); show('library'); camFree=true; camTarget=650; showMarker=false; mascotTarget=()=>H*.8; mascotX=.04;
+  const packs=allPacks();
+  $('#s-library').innerHTML=`<div class="scroll"><div class="wrap lib">
+   <h2 class="h">LECTURE LIBRARY</h2><p class="note">Every lecture is a 7-prompt dive. Send a friend the link and compare depths.</p>
+   <div style="margin:16px 0"><button class="btn ch" id="nb">＋ BUILD A DIVE FROM A LECTURE</button></div>
+   ${packs.map((p,i)=>{ const r=localRun(p.id); return `<div class="item ch"><img src="${tierSprite(['S','P','D','Z','H','G'][i%6])}" style="width:36px;image-rendering:pixelated" alt="">
+     <div class="mid"><div class="t">${esc(p.title)}${p._local?'<span class="local">THIS DEVICE</span>':''}${p.demo?'<span class="local" style="color:#7fe3ff;border-color:#7fe3ff">DEMO</span>':''}</div><div class="c">${esc(p.course||'')} · ${p.prompts.length} prompts${p.by?` · by ${esc(p.by)}`:''}</div>${r&&!r.practice?`<div class="sc">YOUR DIVE: ${r.score} · -${fmt(r.score*10)}m</div>`:''}</div>
+     <div class="btns"><button class="btn sm ch" data-play="${esc(p.id)}">DIVE ▼</button>${p.demo?'':`<button class="btn ghost sm ch" data-link="${esc(p.id)}">LINK</button><button class="btn ghost sm ch" data-code="${esc(p.id)}">CODE</button>`}${(p._local||(p._pub&&CAP.canEdit))?`<button class="btn ghost sm ch" data-del="${esc(p.id)}">✕</button>`:''}</div></div>`; }).join('')}
+  </div></div>`;
+  $('#nb').onclick=goLab;
+  $$('[data-play]').forEach(b=>b.onclick=()=>{ const p=findPack(b.dataset.play); LS.set('lastPack',p.id); location.hash=p.demo?'':'dive-'+p.id; goHome(); });
+  $$('[data-link]').forEach(b=>b.onclick=()=>{ const p=findPack(b.dataset.link); if(p._local){ copyText(packCode(p)); toast('ONLY ON THIS DEVICE — COPIED PACK CODE INSTEAD',3000); } else copyText(shareLink(p)); });
+  $$('[data-del]').forEach(b=>b.onclick=()=>deletePack(b.dataset.del));
+  $$('[data-code]').forEach(b=>b.onclick=()=>copyText(packCode(findPack(b.dataset.code))));
+}
+async function deletePack(id){
+  const p=findPack(id); if(!p) return;
+  const m=modal(`<div class="ptitle">DELETE "${esc(p.title)}"?</div><p class="note">${p._pub?'This republishes the page without it, for everyone.':'Removes it from this device.'}</p><div class="actions"><button class="btn pink ch" id="yes">DELETE</button><button class="btn ghost ch" data-close>KEEP</button></div>`);
+  $('#yes',m).onclick=async()=>{ m.remove();
+    if(p._local){ LS.set('localPacks',localPacks().filter(x=>x.id!==id)); goLibrary(); return; }
+    const ok=await publishData({...DATA,packs:DATA.packs.filter(x=>x.id!==id)}); if(!ok) toast('COULD NOT REPUBLISH — ONLY EDITORS CAN DELETE',3000); };
+}
+
+/* ---------------- self-publish ---------------- */
+function buildDoc(data){
+  const css=document.getElementById('zb-style').textContent, app=document.getElementById('zb-app').textContent;
+  const json=JSON.stringify(data).replace(/</g,'\\u003c');
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>'+HEAD+'<style id="zb-style">'+css+'</style>\n</head>\n<body>\n<div id="root"></div>\n<script type="application/json" id="zb-data">'+json+'<\/script>\n<script id="zb-app">'+app+'<\/script>\n</body>\n</html>\n';
+}
+async function publishData(data,afterId){
+  if(!CAP.art) return false;
+  try{ if(afterId) LS.set('after',afterId); await CAP.art.publish(buildDoc(data)); return true; }
+  catch(e){ LS.set('after',null); console.warn('publish failed',e); return false; }
+}
+
+/* ---------------- LAB (lecture → pack) ---------------- */
+const LAB={sources:[],meta:{title:'',course:'',steer:''},prompts:[],spares:[],busy:false,topic:''};
+function goLab(){
+  stopWorld(); show('lab'); camFree=true; camTarget=1200; showMarker=false; mascotTarget=()=>H*.85; mascotX=.03;
+  renderLab();
+}
+function words(t){ return (t.match(/\S+/g)||[]).length; }
+function renderLab(){
+  const canGen=!!CAP.sample;
+  $('#s-lab').innerHTML=`<div class="scroll"><div class="wrap lab">
+   <h2 class="h">BUILD A DIVE</h2>
+   <p class="note">Drop in a lecture — slides, PDF handout, transcript, notes. Zebrillion pulls 7 "name one thing" prompts from it and charts every valid answer from horse to zebra. Details the lecturer mentioned once sink deepest.</p>
+   <div class="two"><div><label>LECTURE TITLE</label><input type="text" id="lt" placeholder="e.g. Heme Synthesis & Porphyrias" value="${esc(LAB.meta.title)}"></div>
+   <div><label>COURSE / BLOCK</label><input type="text" id="lc" placeholder="e.g. Heme-Onc · Lecture 6" value="${esc(LAB.meta.course)}"></div></div>
+   <label>LECTURE MATERIAL</label>
+   <div class="drop" id="drop"><b>DROP FILES</b> or tap to choose<br><span class="note">.pdf .pptx .docx .txt .md .vtt .srt</span></div>
+   <input type="file" id="fi" multiple accept=".pdf,.pptx,.docx,.txt,.md,.vtt,.srt,text/plain" class="hidden">
+   <div class="srcs" id="srcs">${LAB.sources.map((s,i)=>`<div class="s">📄 ${esc(s.name)}<span class="w">${fmt(words(s.text))} words</span><button data-rm="${i}" aria-label="Remove">×</button></div>`).join('')}</div>
+   <label>OR PASTE A TRANSCRIPT / NOTES</label>
+   <textarea id="paste" placeholder="Paste lecture transcript, slide text or your notes here…">${esc(LAB.paste||'')}</textarea>
+   <label>STEER IT (OPTIONAL)</label>
+   <input type="text" id="steer" placeholder='e.g. "lean on pharm", "skip the history slides", "harder"' value="${esc(LAB.meta.steer)}">
+   <div class="actions"><button class="btn pink ch" id="gen" ${canGen?'':'disabled'}>${LAB.busy?'<span class="spin">✳</span> CHARTING…':'GENERATE DIVE ▼'}</button></div>
+   ${canGen?'':(ON_CLAUDE?`<p class="note">Generating needs Claude access in this page — sign in to claude.ai. You can still import a pack code below.</p>`:`<p class="note">Generating dives uses Claude, so it runs on the Claude version of Zebrillion: <a href="${ART_URL}" target="_blank" rel="noopener" style="color:#7fe3ff">open the builder ↗</a> (free Claude account). Build there, hit COPY PACK CODE, and paste the code below to play it here — or send it to the site owner to add for everyone.</p>`)}
+   <div class="log" id="log">${LAB.log||'> waiting for a lecture…'}</div>
+   <div id="review"></div>
+   <div class="ptitle">IMPORT A PACK CODE</div>
+   <p class="note">Got a pack code from a classmate? Paste it here.</p>
+   <textarea id="imp" placeholder="ZBPACK:{…}" style="min-height:70px"></textarea>
+   <div class="actions"><button class="btn ghost ch" id="impb">IMPORT</button></div>
+  </div></div>`;
+  const drop=$('#drop'), fi=$('#fi');
+  drop.onclick=()=>fi.click();
+  drop.ondragover=e=>{ e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave=()=>drop.classList.remove('over');
+  drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove('over'); addFiles([...e.dataTransfer.files]); };
+  fi.onchange=()=>addFiles([...fi.files]);
+  $$('[data-rm]').forEach(b=>b.onclick=()=>{ LAB.sources.splice(+b.dataset.rm,1); renderLab(); });
+  $('#lt').oninput=e=>LAB.meta.title=e.target.value; $('#lc').oninput=e=>LAB.meta.course=e.target.value;
+  $('#steer').oninput=e=>LAB.meta.steer=e.target.value; $('#paste').oninput=e=>LAB.paste=e.target.value;
+  $('#gen').onclick=generate;
+  $('#impb').onclick=importCode;
+  renderReview();
+}
+function log(t,err){ LAB.log=(LAB.log&&LAB.log!=='> waiting for a lecture…'?LAB.log+'\n':'')+(err?'<span class="e">'+esc(t)+'</span>':esc(t)); const el=$('#log'); if(el){ el.innerHTML=LAB.log; el.scrollTop=1e9; } }
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('could not load '+src)); document.head.appendChild(s); }); }
+const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+async function ensurePdf(){ if(window.pdfjsLib) return; await loadScript(PDFJS+'pdf.min.js'); await loadScript(PDFJS+'pdf.worker.min.js'); window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS+'pdf.worker.min.js'; }
+async function ensureZip(){ if(window.JSZip) return; await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'); }
+const decodeXml=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(+n)).replace(/&amp;/g,'&');
+function xmlText(xml,tag,para){ return xml.split(new RegExp('</'+para+'>')).map(chunk=>{ const m=chunk.match(new RegExp('<'+tag+'(?: [^>]*)?>([^<]*)</'+tag+'>','g'))||[]; return m.map(x=>decodeXml(x.replace(/<[^>]+>/g,''))).join(''); }).filter(Boolean).join('\n'); }
+async function extract(file){
+  const name=file.name, ext=(name.split('.').pop()||'').toLowerCase();
+  if(ext==='pdf'){
+    await ensurePdf(); const buf=await file.arrayBuffer(); const doc=await window.pdfjsLib.getDocument({data:buf}).promise; let out=[];
+    for(let i=1;i<=doc.numPages;i++){ const pg=await doc.getPage(i); const tc=await pg.getTextContent(); let last=null, line=''; const lines=[];
+      for(const it of tc.items){ if(last!=null&&Math.abs(it.transform[5]-last)>2){ lines.push(line); line=''; } line+=(line&&!line.endsWith(' ')?' ':'')+it.str; last=it.transform[5]; } lines.push(line);
+      const t=lines.map(s=>s.trim()).filter(Boolean).join('\n'); if(t) out.push(`[Page ${i}]\n${t}`); }
+    return out.join('\n\n');
+  }
+  if(ext==='pptx'){
+    await ensureZip(); const z=await window.JSZip.loadAsync(file); const out=[];
+    const slides=Object.keys(z.files).filter(f=>/^ppt\/slides\/slide\d+\.xml$/.test(f)).sort((a,b)=>+a.match(/(\d+)\.xml/)[1]-+b.match(/(\d+)\.xml/)[1]);
+    for(const f of slides){ const n=+f.match(/(\d+)\.xml/)[1]; const t=xmlText(await z.file(f).async('string'),'a:t','a:p');
+      let notes=''; const nf=z.file(`ppt/notesSlides/notesSlide${n}.xml`); if(nf){ notes=xmlText(await nf.async('string'),'a:t','a:p').replace(/^\d+$/m,'').trim(); }
+      if(t||notes) out.push(`[Slide ${n}]\n${t}${notes?`\n(speaker notes) ${notes}`:''}`); }
+    return out.join('\n\n');
+  }
+  if(ext==='docx'){ await ensureZip(); const z=await window.JSZip.loadAsync(file); const x=await z.file('word/document.xml').async('string'); return xmlText(x,'w:t','w:p'); }
+  let t=await file.text();
+  if(ext==='vtt'||ext==='srt') t=t.split('\n').filter(l=>!/^WEBVTT/.test(l)&&!/^\d+\s*$/.test(l)&&!/-->/.test(l)&&!/^NOTE/.test(l)).join(' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ');
+  return `[Transcript]\n${t}`;
+}
+async function addFiles(files){
+  for(const f of files){
+    log('> reading '+f.name+'…');
+    try{ const text=(await extract(f)).trim(); if(!text||words(text)<20){ log('  '+f.name+': found almost no text (scanned slides?). Try the transcript or paste notes.',true); continue; }
+      LAB.sources.push({name:f.name,text}); log('  ok · '+fmt(words(text))+' words');
+      if(!LAB.meta.title){ LAB.meta.title=f.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').slice(0,60); }
+    }catch(e){ log('  could not read '+f.name+': '+(e.message||e),true); }
+  }
+  renderLab();
+}
+function lectureText(){
+  let t=LAB.sources.map(s=>`=== ${s.name} ===\n${s.text}`).join('\n\n'); if(LAB.paste&&LAB.paste.trim()) t+=`\n\n=== pasted notes / transcript ===\n${LAB.paste.trim()}`;
+  return t;
+}
+function parseJSON(text){
+  let s=String(text||'').replace(/```(?:json)?/g,'').trim(); const a=s.indexOf('{'), b=s.lastIndexOf('}'); if(a<0) throw new Error('no JSON');
+  try{ return JSON.parse(s.slice(a,b+1)); }catch(e){
+    // salvage truncated answer lists
+    const cut=s.lastIndexOf('},'); if(cut>a){ try{ return JSON.parse(s.slice(a,cut+1)+']}'); }catch(_){} }
+    throw e; }
+}
+async function askJSON(prompt,tier,label){
+  let lastErr;
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      let shown=0;
+      const r=await CAP.sample(prompt,{modelTier:tier,onText:({text})=>{ const n=(text||'').length; if(n-shown>1500){ shown=n; const el=$('#log'); if(el){ el.innerHTML=LAB.log+'\n<span style="color:#7fe3ff">  '+esc(label)+' · '+fmt(n)+' chars…</span>'; el.scrollTop=1e9; } } }});
+      return parseJSON(r.text);
+    }catch(e){ lastErr=e; if(e&&e.code==='not_granted') throw e; if(e&&e.code==='rate_limited'){ log('  rate limited — waiting a moment…'); await new Promise(r=>setTimeout(r,8000)); } }
+  }
+  throw lastErr;
+}
+function planPrompt(lecture){
+  return `You are designing a round of ZEBRILLION, a "name one thing" rarity game for medical students, built from ONE lecture. Players get 25 seconds per prompt to type a single answer; obvious answers score little and rare-but-correct answers score a lot. The goal is to make students recall the lecture deeply.
+
+LECTURE TITLE: ${LAB.meta.title||'(untitled)'}
+COURSE: ${LAB.meta.course||'(unspecified)'}
+STEERING FROM THE CREATOR: ${LAB.meta.steer||'(none)'}
+
+Write 10 candidate prompts, best first. Rules:
+- Each prompt starts with "Name a" / "Name an" / "Name one" and asks for ONE short nameable item (a disease, drug, enzyme, structure, sign, gene, organism, lab finding, cell type, nerve, etc.).
+- The category must be clearly taught or illustrated in this lecture, but must have at least 8 valid answers in real medicine (ideally 15-80) so there is a spread from obvious to obscure. Avoid categories with fewer than 6 valid answers.
+- Answers must be objectively checkable from the wording alone. Avoid opinion, "best", "most important", and multi-part answers.
+- Cover different parts of the lecture; vary the kind of thing asked (mechanisms → name the drug/enzyme, presentations → name the disease, etc.).
+- For each prompt list "anchors": the valid answers the lecture itself mentions (up to 25), with "where" (e.g. "Slide 12", "Page 4", "transcript") and "emph" from 1 (mentioned once in passing) to 5 (a headline point repeated several times).
+
+Return ONLY JSON, no commentary:
+{"title":"catchy pack title, max 40 chars","topic":"one-line summary of the lecture","prompts":[{"q":"Name a ...","anchors":[{"n":"...","where":"Slide 3","emph":4}]}]}
+
+LECTURE MATERIAL (slides marked [Slide n], pages [Page n]):
+"""
+${lecture}
+"""`;
+}
+function answersPrompt(p){
+  return `You are writing the answer key for one prompt in ZEBRILLION, a rarity game for medical students. Players have 25 seconds to type ONE answer. Rare-but-correct answers sink deeper and score more.
+
+LECTURE: ${LAB.meta.title||''} (${LAB.meta.course||''}) — ${LAB.topic||''}
+PROMPT: ${p.q}
+ANSWERS THE LECTURE ITSELF MENTIONS (where + emphasis 1-5): ${JSON.stringify(p.anchors||[])}
+CREATOR STEERING: ${LAB.meta.steer||'(none)'}
+
+List EVERY valid answer you can (aim for 25-90 when the category allows; never pad with wrong ones). Then imagine 100 students from this class answering right after the lecture, and tier each answer:
+- "H" Horse (10 pts): the 2-5 answers a big share (>20%) would blurt out — headline examples, mnemonic members, heavily emphasised (emph 4-5) items.
+- "G" Gunner (15 pts): 0-3 answers that FEEL clever or niche but that keen students reach for anyway (the "too clever" trap).
+- "S" Schooler (30 pts): solid answers roughly 5-20% would give.
+- "P" Pearl (60 pts): correct, less common, 1-5%.
+- "D" Deep cut (85 pts): correct but rarely named (<1%).
+- "Z" exactly ONE answer: the most satisfying obscure-but-valid answer — ideally one the lecture mentioned only in passing (emph 1), rewarding attention.
+Lecture emphasis matters: heavily emphasised anchors lean H/S; anchors mentioned once in passing are great P/D/Z picks.
+
+For each answer give:
+- "n": canonical name (short, standard spelling)
+- "a": aliases players might type — abbreviations, eponyms, alternate names, brand names for drugs, numeral variants (type 1 / type I), British spellings. Do not include aliases that are themselves different valid answers.
+- "t": tier letter
+- "s": where it appears in the lecture ("Slide 14", "Page 3", "transcript") or "" if not in the lecture
+- "f": one crisp, accurate, high-yield fact to remember (max 100 characters). For the Z answer make it a delightful fun fact.
+Only include answers that are unambiguously correct for the prompt exactly as worded. If the prompt wording is ambiguous, tighten it in "q".
+
+Return ONLY JSON: {"q":"final prompt wording","ans":[{"n":"","a":[],"t":"H","s":"","f":""}]}`;
+}
+function cleanPrompt(raw,fallbackQ){
+  const seen=new Set(); let ans=(raw&&Array.isArray(raw.ans)?raw.ans:[]).filter(a=>a&&a.n).map(a=>({n:String(a.n).trim().slice(0,90),a:(Array.isArray(a.a)?a.a:[]).map(x=>String(x).trim()).filter(Boolean).slice(0,14),t:'HGSPDZ'.includes(a.t)?a.t:'D',s:String(a.s||'').trim().slice(0,40),f:String(a.f||'').trim().slice(0,170)}))
+    .filter(a=>{ const k=keyOf(a.n); if(!k||seen.has(k)) return false; seen.add(k); return true; });
+  // aliases must not collide with other answers' names
+  const names=new Set(ans.map(a=>keyOf(a.n))); ans.forEach(a=>{ a.a=a.a.filter(x=>{ const k=keyOf(x); return k!==keyOf(a.n)&&!names.has(k); }); });
+  const zs=ans.filter(a=>a.t==='Z'); if(zs.length>1) zs.slice(1).forEach(a=>a.t='D');
+  if(!zs.length){ const c=ans.find(a=>a.t==='D'&&a.s)||ans.find(a=>a.t==='D')||ans.find(a=>a.t==='P'); if(c) c.t='Z'; }
+  if(!ans.some(a=>a.t==='H')){ const c=ans.find(a=>a.t==='S')||ans[0]; if(c) c.t='H'; }
+  let q=String((raw&&raw.q)||fallbackQ||'').trim(); return {q,ans};
+}
+async function pool(items,n,fn){ const out=new Array(items.length); let i=0; await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{ while(i<items.length){ const k=i++; out[k]=await fn(items[k],k); } })); return out; }
+async function chart(c,k,total){
+  log(`> charting answers ${k+1}/${total}: ${c.q}`);
+  try{ const raw=await askJSON(answersPrompt(c),'complex',`prompt ${k+1}`); const p=cleanPrompt(raw,c.q); log(`  ✓ ${p.ans.length} answers`); return p.ans.length>=4?{...p,anchors:c.anchors}:null; }
+  catch(e){ log(`  ✗ prompt ${k+1} failed (${e.code||e.message||e})`,true); return null; }
+}
+async function generate(){
+  if(LAB.busy) return; const lecture=lectureText();
+  if(words(lecture)<80){ log('> need more lecture material — add slides or paste a transcript (80+ words).',true); return; }
+  LAB.busy=true; LAB.prompts=[]; LAB.log=''; renderLab(); ac();
+  try{
+    let limit=180000; try{ const L=CAP.sample.limits&&await CAP.sample.limits(); if(L&&L.maxInputChars) limit=Math.min(limit,L.maxInputChars-12000); }catch(e){}
+    let lec=lecture; if(lec.length>limit){ lec=lec.slice(0,limit); log(`> lecture is long — using the first ${fmt(limit)} characters.`); }
+    log(`> sounding ${fmt(words(lec))} words of lecture for prompts…`);
+    const plan=await askJSON(planPrompt(lec),'complex','planning');
+    let cands=(plan.prompts||[]).filter(p=>p&&p.q&&/^name\b/i.test(String(p.q).trim())).map(p=>({q:String(p.q).trim(),anchors:Array.isArray(p.anchors)?p.anchors.slice(0,25):[]}));
+    if(cands.length<3) throw new Error('could not find enough promptable categories');
+    if(!LAB.meta.title&&plan.title) LAB.meta.title=plan.title; LAB.packTitle=plan.title||LAB.meta.title; LAB.topic=plan.topic||'';
+    log(`  ✓ ${cands.length} candidate prompts`);
+    const first=cands.slice(0,7); LAB.spares=cands.slice(7);
+    const res=await pool(first,2,(c,k)=>chart(c,k,first.length));
+    LAB.prompts=res.filter(Boolean);
+    while(LAB.prompts.length<7&&LAB.spares.length){ const c=LAB.spares.shift(); const p=await chart(c,LAB.prompts.length,7); if(p) LAB.prompts.push(p); }
+    log(`> done. ${LAB.prompts.length} prompts charted. Review below, then publish.`);
+  }catch(e){ log('> generation failed: '+(e.code==='not_granted'?'Claude access was not allowed in this page.':(e.message||e.code||e)),true); }
+  LAB.busy=false; renderLab(); setTimeout(()=>$('#review')?.scrollIntoView({behavior:'smooth'}),100);
+}
+function hist(p){ return `<div class="hist">${ORDER.map(t=>{ const n=p.ans.filter(a=>a.t===t).length; return n?`<i style="flex:${n};background:var(--t-${t})" title="${TIERS[t].name}: ${n}"></i>`:''; }).join('')}</div>`; }
+function renderReview(){
+  const el=$('#review'); if(!el) return; if(!LAB.prompts.length){ el.innerHTML=''; return; }
+  const canPub=!!CAP.art&&CAP.canEdit;
+  el.innerHTML=`<div class="ptitle">REVIEW THE DIVE <span>${LAB.prompts.length} PROMPTS</span></div>
+   <div class="two"><div><label>PACK TITLE</label><input type="text" id="ptitle" value="${esc(LAB.packTitle||LAB.meta.title)}"></div><div><label>CREDIT AS</label><input type="text" id="pby" value="${esc(LS.get('name','')||'')}" placeholder="your name"></div></div>
+   <div style="margin-top:12px">${LAB.prompts.map((p,i)=>`<div class="rv" data-i="${i}"><div class="hd"><span class="i">${i+1}</span><input value="${esc(p.q)}" data-q="${i}">${hist(p)}<div class="tools"><button class="btn ghost sm ch" data-open="${i}" title="Show answers">${p.ans.length} ▾</button><button class="btn ghost sm ch" data-rr="${i}" title="Swap for a different prompt">↻</button><button class="btn ghost sm ch" data-x="${i}" title="Remove">✕</button></div></div>
+     <div class="body">${ORDER.map(t=>p.ans.map((a,j)=>a.t===t?`<span class="chip" style="--tc:var(--t-${t})" title="${esc(a.f)}"><img src="${tierSprite(t)}" alt="">${esc(a.n)}<button data-dela="${i}:${j}" aria-label="Remove answer">×</button></span>`:'').join('')).join('')}
+       <div class="addrow"><input placeholder="add a valid answer" data-addn="${i}"><select data-addt="${i}">${ORDER.map(t=>`<option value="${t}" ${t==='P'?'selected':''}>${TIERS[t].name==='ONE IN A ZEBRILLION'?'ZEBRA':TIERS[t].name}</option>`).join('')}</select><button class="btn ghost sm ch" data-add="${i}">ADD</button><button class="btn ghost sm ch" data-rechart="${i}" title="Re-chart answers for the edited wording">RE-CHART</button></div></div></div>`).join('')}</div>
+   <div class="actions">
+     <button class="btn pink ch" id="pub">${canPub?'PUBLISH TO EVERYONE ▲':'SAVE ON THIS DEVICE'}</button>
+     <button class="btn ghost ch" id="try">TEST DIVE ▼</button>
+     <button class="btn ghost ch" id="code">COPY PACK CODE</button></div>
+   <p class="note">${canPub?'Publishing adds this dive to the page itself, so anyone with the link can play it.':'Only editors of this page can publish for everyone. Save it here and send the pack code to the page owner to publish.'}</p>`;
+  $$('[data-q]',el).forEach(inp=>inp.oninput=()=>{ LAB.prompts[+inp.dataset.q].q=inp.value; });
+  $$('[data-open]',el).forEach(b=>b.onclick=()=>b.closest('.rv').classList.toggle('open'));
+  $$('[data-x]',el).forEach(b=>b.onclick=()=>{ LAB.prompts.splice(+b.dataset.x,1); renderReview(); });
+  $$('[data-dela]',el).forEach(b=>b.onclick=()=>{ const [i,j]=b.dataset.dela.split(':').map(Number); const p=LAB.prompts[i]; const wasZ=p.ans[j].t==='Z'; p.ans.splice(j,1); if(wasZ){ const c=p.ans.find(a=>a.t==='D'); if(c) c.t='Z'; } delete p._idx; const open=b.closest('.rv').classList.contains('open'); renderReview(); if(open) $(`.rv[data-i="${i}"]`).classList.add('open'); });
+  $$('[data-add]',el).forEach(b=>b.onclick=()=>{ const i=+b.dataset.add; const n=$(`[data-addn="${i}"]`).value.trim(); const t=$(`[data-addt="${i}"]`).value; if(!n) return; const p=LAB.prompts[i]; if(t==='Z') p.ans.forEach(a=>{ if(a.t==='Z') a.t='D'; }); p.ans.push({n,a:[],t,s:'',f:''}); delete p._idx; renderReview(); $(`.rv[data-i="${i}"]`).classList.add('open'); });
+  $$('[data-rr]',el).forEach(b=>b.onclick=async()=>{ const i=+b.dataset.rr; if(!LAB.spares.length){ toast('NO SPARE PROMPTS LEFT — EDIT THE WORDING AND RE-CHART',3000); return; } b.disabled=true; const c=LAB.spares.shift(); const p=await chart(c,i,LAB.prompts.length); if(p){ LAB.prompts[i]=p; } renderReview(); });
+  $$('[data-rechart]',el).forEach(b=>b.onclick=async()=>{ const i=+b.dataset.rechart; b.disabled=true; b.innerHTML='<span class="spin">✳</span>'; const old=LAB.prompts[i]; const p=await chart({q:old.q,anchors:old.anchors||[]},i,LAB.prompts.length); if(p) LAB.prompts[i]=p; renderReview(); });
+  $('#pub').onclick=()=>savePack(canPub);
+  $('#try').onclick=()=>{ const p=assemblePack(); if(p) startDive(p,true); };
+  $('#code').onclick=()=>{ const p=assemblePack(); if(p) copyText(packCode(p)); };
+}
+function assemblePack(){
+  const prompts=LAB.prompts.filter(p=>p.q&&p.ans.length>=3).slice(0,7).map(p=>({q:p.q.trim(),ans:p.ans.map(a=>({n:a.n,a:a.a,t:a.t,s:a.s,f:a.f}))}));
+  if(prompts.length<3){ toast('NEED AT LEAST 3 PROMPTS',2500); return null; }
+  const title=($('#ptitle')?.value||LAB.packTitle||LAB.meta.title||'Untitled lecture').trim().slice(0,48);
+  const by=($('#pby')?.value||'').trim().slice(0,24);
+  return {id:(LAB.packId||(LAB.packId=(Date.now().toString(36)+Math.random().toString(36).slice(2,6)))),title,course:(LAB.meta.course||'').trim().slice(0,60),by,created:Date.now(),prompts};
+}
+function packCode(p){ return 'ZBPACK:'+JSON.stringify({id:p.id,title:p.title,course:p.course,by:p.by,created:p.created,prompts:p.prompts.map(q=>({q:q.q,ans:q.ans}))}); }
+function validPack(p){ return p&&typeof p.title==='string'&&Array.isArray(p.prompts)&&p.prompts.length>=1&&p.prompts.every(q=>q&&typeof q.q==='string'&&Array.isArray(q.ans)&&q.ans.every(a=>a&&typeof a.n==='string'&&'HGSPDZ'.includes(a.t))); }
+async function savePack(canPub,given){
+  const p=given||assemblePack(); if(!p) return;
+  if(canPub){
+    toast('PUBLISHING…',4000);
+    const ok=await publishData({...DATA,packs:[...DATA.packs.filter(x=>x.id!==p.id),p]},p.id);
+    if(ok) return; // page reloads
+    toast('PUBLISH FAILED — SAVED ON THIS DEVICE',3000);
+  }
+  LS.set('localPacks',[...localPacks().filter(x=>x.id!==p.id),p]); LS.set('lastPack',p.id);
+  modal(`<div class="ptitle">SAVED ON THIS DEVICE</div><p class="note">"${esc(p.title)}" is in your library here. To put it on the shared page, send this pack code to the page owner — they paste it into Import.</p><div class="actions"><button class="btn pink ch" id="cpc">COPY PACK CODE</button><button class="btn ghost ch" id="dv">DIVE IT NOW ▼</button></div>`, m=>{
+    $('#cpc',m).onclick=()=>copyText(packCode(p)); $('#dv',m).onclick=()=>{ m.remove(); startDive(findPack(p.id)||p,false); }; });
+}
+function importCode(){
+  const raw=$('#imp').value.trim().replace(/^ZBPACK:/,''); let p;
+  try{ p=JSON.parse(raw); }catch(e){ toast('THAT PACK CODE DOES NOT PARSE',2500); return; }
+  if(!validPack(p)){ toast('THAT DOES NOT LOOK LIKE A PACK',2500); return; }
+  p={id:String(p.id||Date.now().toString(36)).replace(/[^a-z0-9-]/gi,'').slice(0,24)||Date.now().toString(36),title:p.title.slice(0,48),course:String(p.course||'').slice(0,60),by:String(p.by||'').slice(0,24),created:p.created||Date.now(),prompts:p.prompts.slice(0,7).map(q=>cleanPrompt(q,q.q))};
+  savePack(!!CAP.art&&CAP.canEdit,p);
+}
+
+/* ---------------- boot ---------------- */
+function onCapsReady(){
+  if(CAP.db){ loadPod().then(()=>{ if(view==='home') goHome(); }); }
+  const after=LS.get('after',null);
+  if(after){ LS.set('after',null); const p=findPack(after); if(p){ location.hash='dive-'+p.id; goHome();
+    modal(`<div class="ptitle">PUBLISHED</div><p class="note">"${esc(p.title)}" is live on this page.${ART_URL?' Send this link:':''}</p>${ART_URL?`<textarea readonly style="height:60px">${esc(shareLink(p))}</textarea>`:''}<div class="actions"><button class="btn pink ch" id="cpl">COPY LINK</button><button class="btn ghost ch" id="cpc">COPY PACK CODE</button><button class="btn ghost ch" data-close>DONE</button></div><p class="note">Pack code = what you paste into packs.txt on the website.</p>`, m=>{ $('#cpl',m).onclick=()=>copyText(shareLink(p)); $('#cpc',m).onclick=()=>copyText(packCode(p)); }); } }
+  if(view==='lab') renderLab();
+}
+addEventListener('resize',resize);
+addEventListener('hashchange',()=>{ if(location.hash==='#lab') goLab(); else if(view==='home'||view==='library') goHome(); });
+async function loadPackFile(){
+  if(ON_CLAUDE) return;
+  try{ const r=await fetch('packs.txt',{cache:'no-store'}); if(!r.ok) return; const txt=await r.text(); let added=0;
+    for(const line of txt.split(/\r?\n/)){ const l=line.trim(); if(!l.startsWith('ZBPACK:')) continue;
+      try{ const p=JSON.parse(l.slice(7)); if(validPack(p)&&p.id&&!DATA.packs.some(x=>x.id===p.id)){ DATA.packs.push(p); added++; } }catch(e){ console.warn('bad pack line',e); } }
+    if(added&&(view==='home'||view==='library')){ view==='home'?goHome():goLibrary(); }
+  }catch(e){}
+}
+resize(); mascotY=H*.6; applySettings(); if(location.hash==='#lab') goLab(); else goHome(); requestAnimationFrame(frame);
+loadPackFile();
+initCaps();
+})();
+</script>
+</body>
+</html>
